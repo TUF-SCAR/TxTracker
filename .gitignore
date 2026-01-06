@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+
+# Kivy
+*.log
+
+# Buildozer
+.buildozer/
+bin/
+android/
+
+# Local database
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db

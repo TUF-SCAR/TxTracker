@@ -6,6 +6,25 @@ Versioning format: MAJOR.MINOR
 
 ---
 
+## [0.2] — Date & Time Picker + Virtual Env
+
+### Added
+
+- Project virtual environment setup (`.venv`) for consistent installs and builds
+- KivyMD integration for native-style pickers
+- Tap Date & Time field → Date picker → Time picker
+- Picker-selected date/time is saved into the database (not system time)
+- History continues sorting by saved date/time and refreshes automatically after save
+
+### Developer Notes
+
+- Run inside venv:
+  - `source .venv/bin/activate`
+  - `python main.py`
+- `requirements.txt` updated to include KivyMD
+
+---
+
 ## [0.1] — Core Expense Tracker Foundation
 
 ### Added

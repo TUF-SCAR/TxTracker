@@ -1,4 +1,4 @@
-from kivy.app import App
+from kivymd.app import MDApp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -62,7 +62,7 @@ class RootUI(BoxLayout):
         self.add_widget(nav)
 
 
-class TxTrackerApp(App):
+class TxTrackerApp(MDApp):
     def build(self):
         self.root_ui = RootUI()
         return self.root_ui

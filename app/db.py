@@ -53,3 +53,17 @@ class DataBase:
                 "SELECT id, date_time_ms, item, amount, note FROM transactions WHERE deleted = 0 ORDER BY date_time_ms DESC, id DESC"
             ).fetchall()
             return [dict(r) for r in rows]
+
+    def soft_delete(self, txn_id):
+        with self.connect() as connect:
+            connect.execute(
+                "UPDATE transactions SET deleted = 1 WHERE id = ?", (txn_id,)
+            )
+            connect.commit()
+
+    def undo_delete(self, txn_id):
+        with self.connect() as connect:
+            connect.execute(
+                "UPDATE transactions SET deleted = 0 WHERE id = ?", (txn_id,)
+            )
+            connect.commit()

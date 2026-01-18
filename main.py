@@ -6,6 +6,7 @@ from kivymd.uix.label import MDLabel
 from app.screens.add import AddScreen
 from app.db import DataBase
 from app.screens.history import HistoryScreen
+from app.screens.reports import ReportScreen
 
 
 class RootUI(BoxLayout):
@@ -31,7 +32,9 @@ class RootUI(BoxLayout):
         self.tab_reports = MDBottomNavigationItem(
             name="reports", text="Reports", icon="chart-bar"
         )
-        self.tab_reports.add_widget(MDLabel(text="Reports (next)", halign="center"))
+        self.reports_screen = ReportScreen(db=self.db)
+        self.reports_screen.refresh()
+        self.tab_reports.add_widget(self.reports_screen)
 
         self.bottom_nav.add_widget(self.tab_add)
         self.bottom_nav.add_widget(self.tab_history)
@@ -43,6 +46,8 @@ class RootUI(BoxLayout):
     def on_tab_switch(self, nav, tab, tab_label, tab_icon):
         if tab.name == "history":
             self.history_screen.refresh()
+        elif tab.name == "reports":
+            self.reports_screen.refresh()
 
 
 class TxTrackerApp(MDApp):

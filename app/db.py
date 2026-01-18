@@ -67,3 +67,16 @@ class DataBase:
                 "UPDATE transactions SET deleted = 0 WHERE id = ?", (txn_id,)
             )
             connect.commit()
+
+    def sum_between(self, start, end):
+        with self.connect() as connect:
+            row = connect.execute(
+                """
+                SELECT COALESCE(SUM(amount), 0)
+                FROM transactions
+                WHERE date_time_ms BETWEEN ? AND ?
+                AND deleted = 0
+                """,
+                (start, end),
+            ).fetchone()
+            return int(row[0])

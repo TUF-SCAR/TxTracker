@@ -6,6 +6,57 @@ Versioning format: MAJOR.MINOR
 
 ---
 
+## [0.4] — Reports System & Core Stability Update
+
+### Added
+
+- Fully functional **Reports screen**
+- Automatic calculation of:
+  - Weekly expense total
+  - Monthly expense total
+  - Yearly expense total
+- Real-time report refresh when switching tabs
+- Expense totals calculated using selected transaction date & time
+- Positive spending display while storing expenses internally as negative paise
+- SQLite index on `date_time_ms` for faster report queries
+
+### Improvements
+
+- History screen now loads automatically on app startup
+- Reports screen updates without restarting the app
+- Pixel-style Add Expense layout refinement
+- Improved card spacing and padding
+- Cleaner dark theme consistency across all screens
+- Faster navigation between tabs
+- Improved database performance for large transaction lists
+
+### Bug Fixes
+
+- Fixed Reports always showing ₹0
+- Fixed incorrect SQL column references
+- Fixed mismatch between transaction date and report calculations
+- Fixed history appearing empty until second app launch
+- Fixed database connection leaks during report calculations
+- Fixed inconsistent behavior between Windows and WSL environments
+
+### Database & Logic Changes
+
+- Reports now correctly query `date_time_ms`
+- All calculations use millisecond timestamps
+- Soft-deleted transactions are excluded from totals
+- Decimal-safe rupees → paise conversion maintained
+- Existing databases remain fully compatible (no migration required)
+
+### Technical Notes
+
+- Expense-only model (all values stored as negative paise)
+- Reports display values as positive totals for clarity
+- No automatic income tracking
+- No recurring transactions
+- No background services added
+
+---
+
 ## [0.3] — UI Polish & History Stability
 
 ### Added
@@ -32,10 +83,6 @@ Versioning format: MAJOR.MINOR
 - Fixed WSL2 runtime errors:
   - `libmtdev.so.1` missing
   - clipboard provider errors
-- App now runs cleanly on:
-  - Windows
-  - Linux
-  - WSL2
 
 ### Technical Notes
 

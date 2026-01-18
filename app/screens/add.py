@@ -38,7 +38,7 @@ class AddScreen(BoxLayout):
         card.height = 400
 
         self.date_time_input = MDTextField(
-            hint_text="Date & Time (you type)", readonly=True
+            hint_text="Date & Time (tap to pick)", readonly=True
         )
         self.date_time_input.bind(on_touch_down=self.date_time_touch)
         self.selected_date = None
@@ -99,6 +99,13 @@ class AddScreen(BoxLayout):
         print("ITEM: ", item)
         print("AMOUNT: ", amount)
         print("NOTE: ", note)
+
+        self.item_input.text = ""
+        self.amount_input.text = ""
+        self.note_input.text = ""
+        self.date_time_input.text = ""
+        self.selected_date = None
+        self.selected_date_time = None
 
     def date_time_touch(self, widget, touch):
         if widget.collide_point(*touch.pos):

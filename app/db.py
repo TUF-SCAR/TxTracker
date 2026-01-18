@@ -20,7 +20,7 @@ class DataBase:
             date_time_ms INTEGER NOT NULL,
             item TEXT NOT NULL,
             amount INTEGER NOT NULL,
-            note TEXT NOT NULL DEFAULT ' ',
+            note TEXT NOT NULL DEFAULT '',
             created_at_ms INTEGER NOT NULL,
             deleted INTEGER NOT NULL DEFAULT 0
             );
@@ -74,8 +74,9 @@ class DataBase:
                 """
                 SELECT COALESCE(SUM(amount), 0)
                 FROM transactions
-                WHERE date_time_ms BETWEEN ? AND ?
-                AND deleted = 0
+                WHERE deleted = 0
+                AND date_time_ms >= ?
+                AND date_time_ms < ?
                 """,
                 (start, end),
             ).fetchone()

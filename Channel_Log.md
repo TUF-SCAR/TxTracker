@@ -6,6 +6,49 @@ Versioning format: MAJOR.MINOR
 
 ---
 
+## [0.3] — UI Polish & History Stability
+
+### Added
+
+- Pixel-inspired dark UI foundation
+- Rounded Material-style cards
+- Improved spacing and padding across screens
+- Bottom navigation layout finalized
+- History screen now loads immediately on app start
+- Automatic history refresh after saving transactions
+
+### Improvements
+
+- Add Expense screen layout centered correctly
+- Fixed top input field touching card edge
+- Consistent padding between fields
+- Cleaner visual hierarchy for inputs and buttons
+- Transaction list readability improved
+
+### Bug Fixes
+
+- Fixed History tab not appearing until app restart
+- Fixed history not refreshing after save
+- Fixed WSL2 runtime errors:
+  - `libmtdev.so.1` missing
+  - clipboard provider errors
+- App now runs cleanly on:
+  - Windows
+  - Linux
+  - WSL2
+
+### Technical Notes
+
+- Installed Linux dependencies:
+  - `libmtdev1`
+  - `xclip`
+  - `xsel`
+- No database schema changes
+- No breaking API changes
+- Existing data remains fully compatible
+
+---
+
 ## [0.2] — Date & Time Picker + Virtual Env
 
 ### Added

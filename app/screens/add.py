@@ -1,10 +1,11 @@
 import time
 from datetime import datetime
 from kivymd.uix.pickers import MDDatePicker, MDTimePicker
+from kivymd.uix.card import MDCard
+from kivymd.uix.label import MDLabel
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.button import MDRaisedButton
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
 from kivy.app import App
 from app.utils import rupees_to_paise
 
@@ -16,33 +17,60 @@ class AddScreen(BoxLayout):
         self.orientation = "vertical"
         self.padding = 12
         self.spacing = 10
+        self.add_widget(BoxLayout())
+
+        self.add_widget(
+            MDLabel(
+                text="Add Expense",
+                halign="center",
+                font_style="H5",
+                size_hint_y=None,
+                height=50,
+            )
+        )
+        card = MDCard(
+            orientation="vertical",
+            padding=(18, 26, 18, 18),
+            spacing=14,
+            size_hint=(1, None),
+            radius=[24],
+        )
+        card.height = 400
+
+        self.date_time_input = MDTextField(
+            hint_text="Date & Time (you type)", readonly=True
+        )
+        self.date_time_input.bind(on_touch_down=self.date_time_touch)
         self.selected_date = None
         self.selected_date_time = None
 
-        self.add_widget(Label(text="Add Expence", size_hint_y=None, height=40))
-
-        self.date_time_input = TextInput(
-            hint_text="Date & Time (you type)", multiline=False
+        self.item_input = MDTextField(hint_text="Item (e.g. Tea)")
+        self.amount_input = MDTextField(
+            hint_text="Amount (e.g. 120.50)", input_filter="float"
         )
-        self.date_time_input.readonly = True
-        self.date_time_input.bind(on_touch_down=self.date_time_touch)
-        self.add_widget(self.date_time_input)
+        self.note_input = MDTextField(hint_text="Note (optional)")
 
-        self.item_input = TextInput(hint_text="Item (e.g. Tea)", multiline=False)
-        self.add_widget(self.item_input)
+        self.status_label = MDLabel(
+            text="", halign="center", size_hint_y=None, height=24
+        )
 
-        self.amount_input = TextInput(hint_text="Amount (e.g. 120.50)", multiline=False)
-        self.add_widget(self.amount_input)
-
-        self.note_input = TextInput(hint_text="Note (optional)", multiline=False)
-        self.add_widget(self.note_input)
-
-        self.status_label = Label(text="", size_hint_y=None, height=30)
-        self.add_widget(self.status_label)
-
-        self.save_button = Button(text="SAVE", size_hint_y=None, height=50)
+        self.save_button = MDRaisedButton(text="SAVE", size_hint_x=1, height=48)
         self.save_button.bind(on_press=self.on_save)
-        self.add_widget(self.save_button)
+
+        self.date_time_input.mode = "rectangle"
+        self.item_input.mode = "rectangle"
+        self.amount_input.mode = "rectangle"
+        self.note_input.mode = "rectangle"
+
+        card.add_widget(self.date_time_input)
+        card.add_widget(self.item_input)
+        card.add_widget(self.amount_input)
+        card.add_widget(self.note_input)
+        card.add_widget(self.status_label)
+        card.add_widget(self.save_button)
+
+        self.add_widget(card)
+        self.add_widget(BoxLayout())
 
     def on_save(self, instance):
 
@@ -104,7 +132,7 @@ class AddScreen(BoxLayout):
         )
 
         self.selected_date_time = date_time
-        self.date_time_input.text = date_time.strftime("%Y-%m-%d %H:%M")
+        self.date_time_input.text = date_time.strftime("%Y-%m-%d • %H:%M")
 
     def on_picker_cancel(self, instance, value):
         pass

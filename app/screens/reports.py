@@ -20,16 +20,6 @@ class ReportScreen(BoxLayout):
         self.spacing = 12
         self.add_widget(BoxLayout())
 
-        self.add_widget(
-            MDLabel(
-                text="Reports",
-                halign="center",
-                font_style="H5",
-                size_hint_y=None,
-                height=50,
-            )
-        )
-
         self.card_week = self.make_card("This Week", "₹0")
         self.card_month = self.make_card("This Month", "₹0")
         self.card_year = self.make_card("This Year", "₹0")

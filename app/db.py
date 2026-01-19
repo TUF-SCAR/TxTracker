@@ -57,6 +57,11 @@ class DataBase:
             )
             connect.commit()
 
+    def hard_delete(self, txn_id: int):
+        with self.connect() as connect:
+            connect.execute("DELETE FROM transactions WHERE id = ?", (txn_id,))
+            connect.commit()
+
     def undo_delete(self, txn_id):
         with self.connect() as connect:
             connect.execute(

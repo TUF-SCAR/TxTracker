@@ -2,7 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
-Versioning format: MAJOR.MINOR
+Versioning format: finished.all_changes
+
+---
+
+## [0.6] — Add UI Overhaul + Custom Bottom Dock
+
+### Added
+
+- **Custom bottom dock navigation** (Add / History / Reports) built manually (no KivyMD BottomNavigation), with active-state styling + tab switching logic. :contentReference[oaicite:1]{index=1}
+- **Hero amount header** on Add screen: big ₹ + amount display, with the amount editable via a focused input (tap/click on the hero amount to focus). :contentReference[oaicite:2]{index=2}
+
+### Changed
+
+- Add screen form layout moved closer to the reference:
+  - Section labels (**ITEM NAME**, **DETAILS**)
+  - “Pill row” inputs with left icons + optional right chevron (Date/Time). :contentReference[oaicite:3]{index=3}
+- Amount display now formats using **Indian grouping commas** while typing (e.g., 1,50,000), and it auto-adjusts sizing to fit the header area.
+- Saving now **strips commas** from the amount string before converting to paise. :contentReference[oaicite:5]{index=5}
+- Date & time picking flow: **MDDatePicker → MDTimePicker**, and Add screen shows `YYYY-MM-DD • hh:mm AM/PM`. :contentReference[oaicite:6]{index=6}
+
+### Fixed
+
+- Tab switching now triggers refresh safely using `Clock.schedule_once(...)` when moving to History/Reports. :contentReference[oaicite:7]{index=7}
+- “Save” now refreshes History + Reports after inserting a transaction. :contentReference[oaicite:8]{index=8}
+
+### Notes
+
+- UI is still a **WIP toward the reference look** (background + field polish still pending), but navigation + amount formatting are in place.
 
 ---
 

@@ -1,12 +1,12 @@
-from datetime import datetime
+from datetime import date, timedelta
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from app.utils import (
-    start_of_week,
+    date_to_str,
+    start_of_week_sun,
     start_of_month,
     start_of_year,
-    date_time_to_ms,
     paise_to_rupees,
 )
 
@@ -58,17 +58,18 @@ class ReportScreen(BoxLayout):
         return card
 
     def refresh(self):
-        now = datetime.now()
-        now_ms = date_time_to_ms(now)
+        today = date.today()
 
-        week_start = date_time_to_ms(start_of_week(now))
-        month_start = date_time_to_ms(start_of_month(now))
-        year_start = date_time_to_ms(start_of_year(now))
+        week_start = start_of_week_sun(today)
+        month_start = start_of_month(today)
+        year_start = start_of_year(today)
 
-        week_total = self.db.sum_between(week_start, now_ms)
-        month_total = self.db.sum_between(month_start, now_ms)
-        year_total = self.db.sum_between(year_start, now_ms)
+        end_exclusive = date_to_str(today + timedelta(days=1))
 
-        self.card_week._value_lbl.text = f"₹{paise_to_rupees(-week_total)}"
-        self.card_month._value_lbl.text = f"₹{paise_to_rupees(-month_total)}"
-        self.card_year._value_lbl.text = f"₹{paise_to_rupees(-year_total)}"
+        week_total = self.db.sum_between_dates(date_to_str(week_start), end_exclusive)
+        month_total = self.db.sum_between_dates(date_to_str(month_start), end_exclusive)
+        year_total = self.db.sum_between_dates(date_to_str(year_start), end_exclusive)
+
+        self.card_week._value_lbl.text = f"₹{paise_to_rupees(week_total)}"
+        self.card_month._value_lbl.text = f"₹{paise_to_rupees(month_total)}"
+        self.card_year._value_lbl.text = f"₹{paise_to_rupees(year_total)}"

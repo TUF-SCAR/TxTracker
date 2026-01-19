@@ -7,7 +7,7 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDRaisedButton
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import App
-from app.utils import rupees_to_paise
+from app.utils import rupees_to_paise, time_24_to_12
 
 
 class AddScreen(BoxLayout):
@@ -41,8 +41,8 @@ class AddScreen(BoxLayout):
             hint_text="Date & Time (tap to pick)", readonly=True
         )
         self.date_time_input.bind(on_touch_down=self.date_time_touch)
-        self.selected_date = None
-        self.selected_date_time = None
+        self.selected_date_str = None
+        self.selected_time_str = None
 
         self.item_input = MDTextField(hint_text="Item (e.g. Tea)")
         self.amount_input = MDTextField(
@@ -74,11 +74,13 @@ class AddScreen(BoxLayout):
 
     def on_save(self, instance):
 
-        if self.selected_date_time is None:
+        if self.selected_date_str is None or self.selected_time_str is None:
             self.status_label.text = "Pick date & time"
             return
 
-        date_time = int(self.selected_date_time.timestamp() * 1000)
+        date_str = self.selected_date_str
+        time_str = self.selected_time_str
+
         item = self.item_input.text.strip()
         amount_text = self.amount_input.text.strip()
         note = self.note_input.text.strip()
@@ -87,15 +89,24 @@ class AddScreen(BoxLayout):
             self.status_label.text = "Item required"
             return
 
-        amount = rupees_to_paise(amount_text)
-        self.db.add_transaction(date_time, item, amount, note)
+        try:
+            amount = rupees_to_paise(amount_text)
+        except Exception:
+            self.status_label.text = "Invalid amount"
+            return
 
-        self.status_label.text = "Saved ✅🤯🔥🔥"
+        self.db.add_transaction(date_str, time_str, item, amount, note)
+
+        self.status_label.text = "Saved"
+
         app = App.get_running_app()
         if app and hasattr(app, "refresh_history"):
             app.refresh_history()
+        if app and hasattr(app, "refresh_reports"):
+            app.refresh_reports()
 
-        print("Date: ", date_time)
+        print("Date: ", date_str)
+        print("Time: ", time_str)
         print("ITEM: ", item)
         print("AMOUNT: ", amount)
         print("NOTE: ", note)
@@ -104,8 +115,8 @@ class AddScreen(BoxLayout):
         self.amount_input.text = ""
         self.note_input.text = ""
         self.date_time_input.text = ""
-        self.selected_date = None
-        self.selected_date_time = None
+        self.selected_date_str = None
+        self.selected_time_str = None
 
     def date_time_touch(self, widget, touch):
         if widget.collide_point(*touch.pos):
@@ -119,6 +130,7 @@ class AddScreen(BoxLayout):
 
     def on_date_selected(self, instance, value, date_range):
         self.selected_date = value
+        self.selected_date_str = value.strftime("%Y-%m-%d")
         self.open_time_picker()
 
     def open_time_picker(self):
@@ -138,8 +150,10 @@ class AddScreen(BoxLayout):
             time_value.minute,
         )
 
-        self.selected_date_time = date_time
-        self.date_time_input.text = date_time.strftime("%Y-%m-%d • %H:%M")
+        self.selected_time_str = f"{time_value.hour:02d}:{time_value.minute:02d}"
+
+        display_time = time_24_to_12(self.selected_time_str)
+        self.date_time_input.text = f"{self.selected_date_str} • {display_time}"
 
     def on_picker_cancel(self, instance, value):
         pass

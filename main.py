@@ -1,6 +1,7 @@
 from kivymd.app import MDApp
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.bottomnavigation import MDBottomNavigation, MDBottomNavigationItem
+from kivy.clock import Clock
 from app.screens.add import AddScreen
 from app.db import DataBase
 from app.screens.history import HistoryScreen
@@ -52,6 +53,12 @@ class TxTrackerApp(MDApp):
         self.root_ui.bottom_nav.bind(on_tab_switch=self.on_tab_switch)
         return self.root_ui
 
+    def refresh_reports(self):
+        try:
+            self.root_ui.reports_screen.refresh()
+        except Exception:
+            pass
+
     def refresh_history(self):
         try:
             self.root_ui.history_screen.refresh()
@@ -60,9 +67,9 @@ class TxTrackerApp(MDApp):
 
     def on_tab_switch(self, nav, tab, tab_label, tab_icon):
         if tab.name == "history":
-            self.root_ui.history_screen.refresh()
+            Clock.schedule_once(lambda dt: self.root_ui.history_screen.refresh(), 0)
         elif tab.name == "reports":
-            self.root_ui.reports_screen.refresh()
+            Clock.schedule_once(lambda dt: self.root_ui.reports_screen.refresh(), 0)
 
 
 if __name__ == "__main__":

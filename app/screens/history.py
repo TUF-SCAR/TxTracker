@@ -4,7 +4,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDIconButton, MDFlatButton
-from app.utils import paise_to_rupees
+from app.utils import paise_to_rupees, time_24_to_12
 
 
 class HistoryScreen(BoxLayout):
@@ -66,6 +66,10 @@ class HistoryScreen(BoxLayout):
             amount = paise_to_rupees(t["amount"])
             note = t["note"] if t["note"] else ""
 
+            date_str = t["date"]
+            time_str = t["time"]
+            time_12 = time_24_to_12(time_str)
+
             card = MDCard(
                 orientation="horizontal",
                 size_hint_y=None,
@@ -78,6 +82,14 @@ class HistoryScreen(BoxLayout):
 
             left.add_widget(MDLabel(text=t["item"], font_style="Subtitle1"))
             left.add_widget(MDLabel(text=note, font_style="Caption"))
+
+            left.add_widget(
+                MDLabel(
+                    text=f"{date_str} • {time_12}",
+                    font_style="Caption",
+                    theme_text_color="Hint",
+                )
+            )
 
             right = BoxLayout(
                 orientation="horizontal", size_hint_x=None, width=150, spacing=6

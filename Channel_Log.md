@@ -6,6 +6,51 @@ Versioning format: MAJOR.MINOR
 
 ---
 
+## [0.5] — Date/Time Schema Upgrade + Reports Refresh Reliability
+
+### Added
+
+- **New date/time storage (split fields)**
+  - `date` stored as `YYYY-MM-DD`
+  - `time` stored as `HH:MM` (24h, used for sorting)
+- Time is displayed in **12-hour format** (readability) while keeping 24h storage for sorting
+- **Add screen now displays selected time in 12-hour format**
+  - Storage remains `HH:MM` (24h) for sorting/DB
+  - UI shows `h:MM AM/PM` after selecting date + time
+
+### Improvements
+
+- Reports refresh reliably when switching to the **Reports** tab (**scheduled on the next UI tick**)
+- Reports refresh immediately after saving a transaction (**no restart needed**)
+- Amount handling simplified:
+  - Expense-only and stored as **positive paise**
+  - UI displays values as **₹** (no negative-sign logic)
+
+### Bug Fixes
+
+- Fixed Reports sometimes showing **₹0 even when transactions exist today**
+  - Root cause: totals used an **end-exclusive** range (`date < end_date`) but Reports passed `end_date = today`
+  - Fix: Reports now uses `end_date = tomorrow` (exclusive), so **today is included**
+- Fixed “This Week” totals showing **₹0 on Sundays** when expenses were added the same day (same end-exclusive issue)
+- Fixed Reports not updating until app restart (tab-switch refresh timing issue)
+
+### Database & Logic Changes
+
+- **Schema change (breaking vs v0.4):**
+  - Replaced `date_time_ms` timestamp model with split `date` + `time`
+  - Updated sorting to: `ORDER BY date DESC, time DESC, id DESC`
+  - Reports compute sums using date ranges: `start_date <= date < end_date` (end-exclusive)
+- Soft-deleted transactions remain excluded from totals (`deleted = 0`)
+
+### Technical Notes
+
+- Week definition: **Sunday → Saturday**
+- `time` stored in 24h for correct sorting, displayed in **12h format**
+- Expense-only model (no income tracking)
+- Amounts stored as **positive paise** (displayed as ₹ in UI)
+
+---
+
 ## [0.4] — Reports System & Core Stability Update
 
 ### Added

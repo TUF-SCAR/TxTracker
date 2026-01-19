@@ -16,41 +16,37 @@ class DataBase:
             connect.execute(
                 """
             CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date_time_ms INTEGER NOT NULL,
-            item TEXT NOT NULL,
-            amount INTEGER NOT NULL,
-            note TEXT NOT NULL DEFAULT '',
-            created_at_ms INTEGER NOT NULL,
-            deleted INTEGER NOT NULL DEFAULT 0
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT NOT NULL,
+                time TEXT NOT NULL,
+                item TEXT NOT NULL,
+                amount INTEGER NOT NULL,
+                note TEXT NOT NULL DEFAULT '',
+                created_at_ms INTEGER NOT NULL,
+                deleted INTEGER NOT NULL DEFAULT 0
             );
             """
             )
 
             connect.execute(
-                "CREATE INDEX IF NOT EXISTS idx_tx_dt ON transactions(date_time_ms);"
+                "CREATE INDEX IF NOT EXISTS idx_tx_date_time ON transactions(date, time);"
             )
             connect.commit()
 
-    def add_transaction(self, date_time_ms, item, amount, note):
-        if amount > 0:
-            amount = -amount
-
+    def add_transaction(self, date_str, time_str, item, amount, note):
         created_at_ms = int(time.time() * 1000)
-
         with self.connect() as connect:
             current = connect.execute(
-                "INSERT INTO transactions (date_time_ms, item, amount, note, created_at_ms, deleted) VALUES (?, ?, ?, ?, ?, 0)",
-                (date_time_ms, item, amount, note, created_at_ms),
+                "INSERT INTO transactions (date, time, item, amount, note, created_at_ms, deleted) VALUES (?, ?, ?, ?, ?, ?, 0)",
+                (date_str, time_str, item, amount, note, created_at_ms),
             )
             connect.commit()
-
         return current.lastrowid
 
     def list_txns(self):
         with self.connect() as connect:
             rows = connect.execute(
-                "SELECT id, date_time_ms, item, amount, note FROM transactions WHERE deleted = 0 ORDER BY date_time_ms DESC, id DESC"
+                "SELECT id, date, time, item, amount, note FROM transactions WHERE deleted = 0 ORDER BY date DESC, time DESC, id DESC"
             ).fetchall()
             return [dict(r) for r in rows]
 
@@ -68,16 +64,16 @@ class DataBase:
             )
             connect.commit()
 
-    def sum_between(self, start, end):
+    def sum_between_dates(self, start_date, end_date):
         with self.connect() as connect:
             row = connect.execute(
                 """
                 SELECT COALESCE(SUM(amount), 0)
                 FROM transactions
                 WHERE deleted = 0
-                AND date_time_ms >= ?
-                AND date_time_ms < ?
+                AND date >= ?
+                AND date < ?
                 """,
-                (start, end),
+                (start_date, end_date),
             ).fetchone()
             return int(row[0])

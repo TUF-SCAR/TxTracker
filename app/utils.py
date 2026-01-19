@@ -1,5 +1,5 @@
 from decimal import Decimal, ROUND_HALF_UP
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 
 
 def rupees_to_paise(text):
@@ -9,8 +9,10 @@ def rupees_to_paise(text):
 
     decimal = Decimal(x).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     paise = int(decimal * 100)
-    if paise > 0:
-        paise = -paise
+
+    if paise <= 0:
+        raise ValueError("Amount must be more than 0")
+
     return paise
 
 
@@ -19,24 +21,42 @@ def paise_to_rupees(paise):
     return f"{decimal:.2f}"
 
 
-def start_of_day(date_time):
-    return date_time.replace(hour=0, minute=0, second=0, microsecond=0)
+def today_date_str():
+    return date.today().strftime("%Y-%m-%d")
 
 
-def start_of_week(date_time):
-    day = start_of_day(date_time)
-    return day - timedelta(days=day.weekday())
+def date_to_str(d: date) -> str:
+    return d.strftime("%Y-%m-%d")
 
 
-def start_of_month(date_time):
-    day = start_of_day(date_time)
-    return day.replace(day=1)
+def str_to_date(s: str) -> date:
+    return datetime.strptime(s, "%Y-%m-%d").date()
 
 
-def start_of_year(date_time):
-    day = start_of_day(date_time)
-    return day.replace(month=1, day=1)
+def start_of_week_sun(d: date) -> date:
+    days_since_sun = (d.weekday() + 1) % 7
+    return d - timedelta(days=days_since_sun)
 
 
-def date_time_to_ms(date_time):
-    return int(date_time.timestamp() * 1000)
+def start_of_month(d: date) -> date:
+    return d.replace(day=1)
+
+
+def start_of_year(d: date) -> date:
+    return d.replace(month=1, day=1)
+
+
+def time_24_to_12(time_str: str) -> str:
+    hh, mm = time_str.split(":")
+    h = int(hh)
+    m = int(mm)
+
+    suffix = "AM"
+    if h >= 12:
+        suffix = "PM"
+
+    h12 = h % 12
+    if h12 == 0:
+        h12 = 12
+
+    return f"{h12}:{m:02d} {suffix}"

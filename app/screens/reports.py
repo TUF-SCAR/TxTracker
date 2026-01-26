@@ -14,10 +14,12 @@ from app.utils import (
 class ReportScreen(BoxLayout):
     def __init__(self, db, **kwargs):
         super().__init__(**kwargs)
+
         self.db = db
         self.orientation = "vertical"
         self.padding = 16
         self.spacing = 12
+
         self.add_widget(BoxLayout())
 
         self.card_week = self.make_card("This Week", "₹0")
@@ -38,8 +40,13 @@ class ReportScreen(BoxLayout):
             height=110,
             radius=[24],
         )
+
         title_lbl = MDLabel(text=title, font_style="Subtitle1")
         value_lbl = MDLabel(text=value, font_style="H4")
+
+        title_lbl.font_name = "Nunito-ExtraBold"
+        title_lbl.font_size = "28sp"
+        value_lbl.font_name = "Roboto-Bold"
 
         card.add_widget(title_lbl)
         card.add_widget(value_lbl)

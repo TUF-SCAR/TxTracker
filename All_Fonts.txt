@@ -1,0 +1,35 @@
+These are all the fonts that can be used in the app, If you want to edit set these in variable_name.font_name = ""
+example: add_transaction.font_name = "Cause-Black". If you want to add different fonts just drop the .ttf file in 
+assets/fonts and it will add automatically in the app as the files name.
+
+Cause-Black
+Cause-Bold
+Cause-ExtraBold
+Cause-ExtraLight
+Cause-Light
+Cause-Medium
+Cause-Regular
+Cause-SemiBold
+Cause-Thin
+ComicSansMS3							#ComicSans-Regular
+design.graffiti.comicsansmsgras				#ComicSans-Bold
+Inter_24pt-Black
+Inter_24pt-Bold
+Inter_24pt-ExtraBold
+Inter_24pt-ExtraLight
+Inter_24pt-Light
+Inter_24pt-Medium
+Inter_24pt-Regular
+Inter_24pt-SemiBold
+Inter_24pt-Thin
+Nunito-Black
+Nunito-Bold
+Nunito-ExtraBold
+Nunito-ExtraLight
+Nunito-Light
+Nunito-Medium
+Nunito-Regular
+Nunito-SemiBold
+PermanentMarker-Regular
+Roboto-Bold
+Roboto-Regular

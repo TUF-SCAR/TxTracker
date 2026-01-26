@@ -1,39 +1,78 @@
+import os
+from kivy.config import Config
+from kivy.core.text import LabelBase
+
+Config.set("graphics", "width", "412")
+Config.set("graphics", "height", "815")
+Config.set("graphics", "resizable", "0")
+
+from kivy.app import App
 from kivy.clock import Clock
 from kivy.metrics import dp
-from kivy.graphics import Color, Rectangle, Ellipse
-from kivy.uix.anchorlayout import AnchorLayout
+from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
-from kivy.app import App
+from kivy.graphics import Color, Rectangle
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.core.image import Image as CoreImage
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivymd.app import MDApp
 from kivymd.uix.card import MDCard
-from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel
-from app.screens.add import AddScreen
+from kivymd.uix.button import MDIconButton
 from app.db import DataBase
+from app.screens.add import AddScreen
 from app.screens.history import HistoryScreen
 from app.screens.reports import ReportScreen
+
+
+def register_all_fonts():
+    fonts_dir = os.path.join(os.path.dirname(__file__), "assets", "fonts")
+    if not os.path.isdir(fonts_dir):
+        print("!!! Fonts folder not found: ", fonts_dir)
+        return
+
+    for fname in os.listdir(fonts_dir):
+        if not fname.lower().endswith(".ttf"):
+            continue
+
+        path = os.path.join(fonts_dir, fname)
+        font_name = os.path.splitext(fname)[0]
+
+        try:
+            LabelBase.register(name=font_name, fn_regular=path)
+            print("✅ Registered:", font_name)
+        except Exception as e:
+            print("!!! Failed font: ", fname, " --> ", e)
 
 
 class RootUI(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.orientation = "vertical"
+
+        self._bg_rect = None
+        self._bg_tex = None
+
+        bg_path = os.path.join(os.path.dirname(__file__), "assets", "bg.png")
+        if os.path.exists(bg_path):
+            try:
+                self._bg_tex = CoreImage(bg_path).texture
+            except Exception:
+                self._bg_tex = None
+
         with self.canvas.before:
-            Color(0.03, 0.03, 0.04, 1)
-            self._bg = Rectangle(pos=self.pos, size=self.size)
+            if self._bg_tex is None:
+                Color(0.05, 0.07, 0.12, 1)
+                self._bg_rect = Rectangle(pos=self.pos, size=self.size)
 
-            Color(0.22, 0.40, 0.75, 0.18)
-            self._glow_top = Ellipse(pos=(0, 0), size=(0, 0))
+            else:
+                Color(1, 1, 1, 1)
+                self._bg_rect = Rectangle(
+                    texture=self._bg_tex, pos=self.pos, size=self.size
+                )
 
-            Color(0.10, 0.20, 0.45, 0.12)
-            self._glow_mid = Ellipse(pos=(0, 0), size=(0, 0))
+        self.bind(pos=self._update_bg, size=self._update_bg)
 
-            Color(0.50, 0.20, 0.60, 0.08)
-            self._glow_side = Ellipse(pos=(0, 0), size=(0, 0))
-
-            Color(0.96, 0.40, 0.46, 0.07)
-            self._glow_bottom = Ellipse(pos=(0, 0), size=(0, 0))
+        self.orientation = "vertical"
 
         self.bind(pos=self._update_bg, size=self._update_bg)
         self._update_bg()
@@ -69,6 +108,7 @@ class RootUI(BoxLayout):
         dock_area = AnchorLayout(
             size_hint_y=None, height=dp(104), padding=(0, 0, 0, dp(16))
         )
+
         self.dock = MDCard(
             size_hint=(None, None),
             height=dp(76),
@@ -78,37 +118,23 @@ class RootUI(BoxLayout):
             spacing=dp(22),
             elevation=0,
         )
+
         dock_area.add_widget(self.dock)
         self.add_widget(dock_area)
 
         self._build_dock_buttons()
         self._update_dock_width()
-        from kivy.core.window import Window
 
         Window.bind(size=lambda *x: self._update_dock_width())
 
         self.screen_manager.current = "add"
 
     def _update_bg(self, *args):
-        self._bg.pos = self.pos
-        self._bg.size = self.size
-
-        w, h = self.size
-        self._glow_top.size = (w * 1.2, h * 0.55)
-        self._glow_top.pos = (self.x - w * 0.1, self.y + h * 0.60)
-
-        self._glow_mid.size = (w * 1.4, h * 0.55)
-        self._glow_mid.pos = (self.x - w * 0.2, self.y + h * 0.25)
-
-        self._glow_side.size = (w * 0.9, h * 0.6)
-        self._glow_side.pos = (self.x + w * 0.25, self.y + h * 0.35)
-
-        self._glow_bottom.size = (w * 1.2, h * 0.45)
-        self._glow_bottom.pos = (self.x - w * 0.1, self.y - h * 0.10)
+        if self._bg_rect:
+            self._bg_rect.pos = self.pos
+            self._bg_rect.size = self.size
 
     def _update_dock_width(self, *args):
-        from kivy.core.window import Window
-
         w = Window.width
         self.dock.width = min(dp(360), w * 0.92)
 
@@ -136,7 +162,12 @@ class RootUI(BoxLayout):
         button.pos_hint = {"center_x": 0.5}
         button.bind(on_release=lambda *a: self.set_tab(tab_name))
 
-        text = MDLabel(text=label, halign="center", font_style="Caption")
+        text = MDLabel(
+            text=label,
+            halign="center",
+            padding=(0, 0, 0, 15),
+        )
+        text.font_name = "Cause-Black"
         text.theme_text_color = "Custom"
 
         box.add_widget(button)
@@ -162,9 +193,9 @@ class RootUI(BoxLayout):
 
         app = App.get_running_app()
         if tab_name == "history":
-            Clock.schedule_once(lambda dt: self.history_screen.refresh(), 0)
+            Clock.schedule_once(lambda dt: self.history_screen.refresh, 0)
         elif tab_name == "reports":
-            Clock.schedule_once(lambda dt: self.reports_screen.refresh(), 0)
+            Clock.schedule_once(lambda dt: self.reports_screen.refresh, 0)
 
 
 class TxTrackerApp(MDApp):
@@ -176,6 +207,7 @@ class TxTrackerApp(MDApp):
         self.theme_cls.material_style = "M3"
 
     def build(self):
+        register_all_fonts()
         self.root_ui = RootUI()
         return self.root_ui
 

@@ -1,5 +1,5 @@
-import sqlite3
 import time
+import sqlite3
 
 
 class DataBase:

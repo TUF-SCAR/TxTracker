@@ -1,8 +1,9 @@
 from datetime import date, timedelta
+from kivy.app import App
+from kivy.metrics import dp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
-from kivy.app import App
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDIconButton, MDFlatButton
@@ -18,6 +19,7 @@ from app.utils import (
 class HistoryScreen(BoxLayout):
     def __init__(self, db, **kwargs):
         super().__init__(**kwargs)
+
         self.db = db
         self.orientation = "vertical"
         self.padding = 12
@@ -27,6 +29,7 @@ class HistoryScreen(BoxLayout):
         self.scroll = ScrollView()
         self.list_box = GridLayout(cols=1, spacing=10, size_hint_y=None)
         self.list_box.bind(minimum_height=self.list_box.setter("height"))
+
         self.scroll.add_widget(self.list_box)
         self.add_widget(self.scroll)
 
@@ -38,40 +41,49 @@ class HistoryScreen(BoxLayout):
             spacing=12,
         )
         self.undo_label = MDLabel(text="", valign="middle")
+        self.undo_label.font_name = "Inter_24pt-Bold"
         self.undo_button = MDFlatButton(text="UNDO")
+        self.undo_button.font_name = "Inter_24pt-Black"
+        self.undo_button.font_size = "16sp"
         self.undo_button.bind(on_press=self.undo_last_delete)
+
         self.undo_bar.add_widget(self.undo_label)
         self.undo_bar.add_widget(self.undo_button)
 
         self.delete_button = MDFlatButton(text="PERMANENT DELETE")
+        self.delete_button.font_name = "Inter_24pt-Black"
+        self.delete_button.font_size = "16sp"
         self.delete_button.bind(on_press=self.delete_last_permanently)
-        self.undo_bar.add_widget(self.delete_button)
 
+        self.undo_bar.add_widget(self.delete_button)
         self.undo_bar.opacity = 0
+
         self.add_widget(self.undo_bar)
 
     def _add_section_header(self, text: str):
-        self.list_box.add_widget(
-            MDLabel(
-                text=text,
-                halign="left",
-                font_style="Subtitle1",
-                size_hint_y=None,
-                height=34,
-            )
+        section_header = MDLabel(
+            text=text,
+            halign="left",
+            font_style="Subtitle1",
+            size_hint_y=None,
+            height=24,
+            padding=(0, dp(20), 0, 0),
         )
+        section_header.font_name = "design.graffiti.comicsansmsgras"
+        section_header.font_size = "18sp"
+        self.list_box.add_widget(section_header)
 
     def _add_group_header(self, text: str):
-        self.list_box.add_widget(
-            MDLabel(
-                text=text,
-                halign="left",
-                font_style="Caption",
-                theme_text_color="Hint",
-                size_hint_y=None,
-                height=26,
-            )
+        group_header = MDLabel(
+            text=text,
+            halign="left",
+            font_style="Caption",
+            theme_text_color="Hint",
+            size_hint_y=None,
+            height=26,
         )
+        group_header.font_name = "design.graffiti.comicsansmsgras"
+        self.list_box.add_widget(group_header)
 
     def _add_tx_card(self, t: dict):
         amount = paise_to_rupees(t["amount"])
@@ -84,28 +96,49 @@ class HistoryScreen(BoxLayout):
         card = MDCard(
             orientation="horizontal",
             size_hint_y=None,
-            height=76,
+            height=96,
             padding=12,
             spacing=12,
         )
 
-        left = BoxLayout(orientation="vertical")
-        left.add_widget(MDLabel(text=t["item"], font_style="Subtitle1"))
-        left.add_widget(MDLabel(text=note, font_style="Caption"))
-        left.add_widget(
-            MDLabel(
-                text=f"{date_str} • {time_12}",
-                font_style="Caption",
-                theme_text_color="Hint",
-            )
+        item_field = MDLabel(
+            text=t["item"], font_style="Subtitle1", padding=(dp(5), 0, 0, 0)
         )
+
+        note_field = MDLabel(
+            text=note, font_style="Caption", padding=(dp(5), dp(5), 0, 0)
+        )
+
+        date_time_field = MDLabel(
+            text=f"{date_str} • {time_12}",
+            font_style="Caption",
+            theme_text_color="Hint",
+        )
+
+        item_field.font_name = "Nunito-ExtraBold"
+        note_field.font_name = "Nunito-ExtraBold"
+        date_time_field.font_name = "Nunito-Black"
+
+        item_field.font_size = "26sp"
+        note_field.font_size = "16sp"
+        date_time_field.font_size = "10sp"
+
+        left = BoxLayout(orientation="vertical")
+        left.add_widget(item_field)
+        left.add_widget(note_field)
+        left.add_widget(date_time_field)
 
         right = BoxLayout(
-            orientation="horizontal", size_hint_x=None, width=150, spacing=6
+            orientation="horizontal", size_hint_x=None, width=200, spacing=6
         )
-        right.add_widget(MDLabel(text=f"₹{amount}", halign="right", font_style="H6"))
+        amount_field = MDLabel(text=f"₹{amount}", halign="right", font_style="H6")
+        amount_field.font_name = "Roboto-Bold"
+        amount_field.font_size = "24sp"
+
+        right.add_widget(amount_field)
 
         delete_button = MDIconButton(icon="trash-can-outline")
+        delete_button.padding = (0, 0, 0, dp(26))
         delete_button.bind(
             on_press=lambda button, txid=t["id"]: self.delete_transaction(txid)
         )
@@ -122,14 +155,34 @@ class HistoryScreen(BoxLayout):
         transactions = self.db.list_txns()
 
         if not transactions:
-            self.list_box.add_widget(
-                MDLabel(
-                    text="(no transactions yet)",
-                    halign="center",
-                    size_hint_y=None,
-                    height=40,
-                )
+            spacer = MDCard(
+                size_hint_y=None,
+                height=dp(300),
+                md_bg_color=(0, 0, 0, 0),
             )
+
+            no_transaction_bg = MDCard(
+                size_hint_y=None,
+                height=dp(48),
+                radius=[18],
+                md_bg_color=(0.05, 0.06, 0.07, 0.85),
+                padding=(0, 0, 0, 0),
+                elevation=0,
+            )
+
+            no_transaction = MDLabel(
+                text="No Transactions Yet!!",
+                halign="center",
+                size_hint_y=None,
+                height=40,
+                padding=(0, 0, 0, dp(110)),
+            )
+            no_transaction.font_name = "PermanentMarker-Regular"
+            no_transaction.font_size = "26sp"
+
+            self.list_box.add_widget(spacer)
+            self.list_box.add_widget(no_transaction_bg)
+            self.list_box.add_widget(no_transaction)
             return
 
         today = date.today()
@@ -210,7 +263,9 @@ class HistoryScreen(BoxLayout):
         self.last_deleted_id = txn_id
         self.undo_label.text = f"Deleted #{txn_id}"
         self.undo_bar.opacity = 1
+
         self.refresh()
+
         app = App.get_running_app()
         if app and hasattr(app, "refresh_reports"):
             app.refresh_reports()
@@ -218,10 +273,13 @@ class HistoryScreen(BoxLayout):
     def undo_last_delete(self, instance):
         if self.last_deleted_id is None:
             return
+
         self.db.undo_delete(self.last_deleted_id)
         self.undo_bar.opacity = 0
         self.last_deleted_id = None
+
         self.refresh()
+
         app = App.get_running_app()
         if app and hasattr(app, "refresh_reports"):
             app.refresh_reports()
@@ -229,10 +287,13 @@ class HistoryScreen(BoxLayout):
     def delete_last_permanently(self, instance):
         if self.last_deleted_id is None:
             return
+
         self.db.hard_delete(self.last_deleted_id)
         self.undo_bar.opacity = 0
         self.last_deleted_id = None
+
         self.refresh()
+
         app = App.get_running_app()
         if app and hasattr(app, "refresh_reports"):
             app.refresh_reports()

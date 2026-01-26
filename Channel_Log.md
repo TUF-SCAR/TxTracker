@@ -6,6 +6,108 @@ Versioning format: finished.all_changes
 
 ---
 
+## ✅ [0.7] — Final UI Lock-In + Font System + Hero Amount Polish
+
+### Added
+
+- **Full custom font system**
+  - Multiple font families loaded manually from `/fonts`
+  - Fonts applied per-widget using `font_name`
+  - Supports mixing fonts across:
+    - Titles
+    - Amount display
+    - Section labels
+    - Input text
+    - Buttons
+
+- **Hero amount cursor**
+  - Visible blinking cursor added to the amount display
+  - Cursor appears directly inside the ₹ amount header
+  - No visible textfield — amount feels native and clean
+
+- **Background image support**
+  - Static background image rendering (`assets/bg.png`)
+  - Automatically scales to window size
+  - Gradient system fully removed
+
+---
+
+### Changed
+
+- **Add screen UI finalized**
+  - Matches reference layout closely:
+    - Amount outside card
+    - Pills grouped inside rounded card
+    - Proper vertical spacing hierarchy
+  - Section headers:
+    - ITEM NAME
+    - DETAILS
+  - Card radius and padding tuned to match reference
+
+- **Hero amount behavior**
+  - Indian comma grouping while typing (`1,50,000`)
+  - Dynamic font scaling:
+    - Expands horizontally first
+    - Shrinks font size only when necessary
+  - Prevents vertical wrapping completely
+
+- **Save button redesigned**
+  - Full-width pill-shaped button
+  - Rounded radius
+  - Custom font
+  - Reference-accurate size and placement
+
+- **Bottom dock polish**
+  - Stable fixed positioning
+  - Consistent icon + label spacing
+  - Active tab coloring refined
+
+---
+
+### Fixed
+
+- Fixed amount text wrapping vertically (`150\n000`)
+- Fixed amount shortening (`…`) appearing unexpectedly
+- Fixed overlapping hero amount and form card
+- Fixed MDTextField underline showing through pills
+- Fixed hidden focus confusion while typing amount
+- Fixed layout jumps caused by `size_hint_y`
+
+---
+
+### Removed
+
+- Removed gradient ellipse background system
+- Removed experimental layout wrappers
+- Removed unused shorten logic on amount label
+- Removed conflicting MDTextField modes
+
+---
+
+### Technical Notes
+
+- Window locked to mobile-accurate resolution:
+  - **412 × 815**
+- Desktop preview now matches mobile layout
+- No KV language used — Python-only UI
+- KivyMD **1.2.0** retained for stability
+- Amount input system:
+  - Hidden numeric `MDTextField` (input only)
+  - Visible `MDLabel` (display only)
+  - Cursor rendered manually for clarity
+
+---
+
+### Status
+
+- UI design: **final**
+- Amount system: **final**
+- Fonts: **final**
+- Navigation: **stable**
+- Database: **unchanged**
+
+---
+
 ## [0.6] — Add UI Overhaul + Custom Bottom Dock
 
 ### Added

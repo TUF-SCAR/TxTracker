@@ -6,7 +6,6 @@ Config.set("graphics", "width", "412")
 Config.set("graphics", "height", "815")
 Config.set("graphics", "resizable", "0")
 
-from kivy.app import App
 from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.core.window import Window
@@ -14,6 +13,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics import Color, Rectangle
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.core.image import Image as CoreImage
+from kivy.properties import NumericProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivymd.app import MDApp
 from kivymd.uix.card import MDCard
@@ -28,7 +28,6 @@ from app.screens.reports import ReportScreen
 def register_all_fonts():
     fonts_dir = os.path.join(os.path.dirname(__file__), "assets", "fonts")
     if not os.path.isdir(fonts_dir):
-        print("!!! Fonts folder not found: ", fonts_dir)
         return
 
     for fname in os.listdir(fonts_dir):
@@ -40,19 +39,20 @@ def register_all_fonts():
 
         try:
             LabelBase.register(name=font_name, fn_regular=path)
-            print("✅ Registered:", font_name)
         except Exception as e:
-            print("!!! Failed font: ", fname, " --> ", e)
+            pass
 
 
 class RootUI(BoxLayout):
+    bg_u = NumericProperty(0.0)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self._bg_rect = None
         self._bg_tex = None
 
-        bg_path = os.path.join(os.path.dirname(__file__), "assets", "bg.png")
+        bg_path = os.path.join(os.path.dirname(__file__), "assets", "background.png")
         if os.path.exists(bg_path):
             try:
                 self._bg_tex = CoreImage(bg_path).texture
@@ -66,11 +66,13 @@ class RootUI(BoxLayout):
 
             else:
                 Color(1, 1, 1, 1)
+                self._bg_tex.wrap = "clamp_to_edge"
                 self._bg_rect = Rectangle(
                     texture=self._bg_tex, pos=self.pos, size=self.size
                 )
 
         self.bind(pos=self._update_bg, size=self._update_bg)
+        self.bind(bg_u=self._update_bg)
 
         self.orientation = "vertical"
 
@@ -128,11 +130,25 @@ class RootUI(BoxLayout):
         Window.bind(size=lambda *x: self._update_dock_width())
 
         self.screen_manager.current = "add"
+        self._set_bg_segment(0)
 
     def _update_bg(self, *args):
         if self._bg_rect:
             self._bg_rect.pos = self.pos
             self._bg_rect.size = self.size
+            if self._bg_tex is not None:
+                u0 = self.bg_u
+                u1 = self.bg_u + (1.0 / 3.0)
+                self._bg_rect.tex_coords = (
+                    u0,
+                    1,
+                    u1,
+                    1,
+                    u1,
+                    0,
+                    u0,
+                    0,
+                )
 
     def _update_dock_width(self, *args):
         w = Window.width
@@ -179,9 +195,24 @@ class RootUI(BoxLayout):
         return box
 
     def set_tab(self, tab_name: str):
-        self.screen_manager.current = tab_name
+        def do_switch(*args):
+            self.screen_manager.current = tab_name
 
-        active = (0.96, 0.40, 0.46, 1)
+        if tab_name == "history":
+            try:
+                self.history_screen.refresh()
+            except Exception:
+                pass
+        elif tab_name == "reports":
+            try:
+                self.reports_screen.refresh()
+            except Exception:
+                pass
+
+        Clock.schedule_once(do_switch, 0.01)
+        self._animate_tab_switch(tab_name)
+
+        active = (0.52, 0.10, 0.14, 1.0)
         inactive = (1, 1, 1, 0.60)
 
         for box in (self._button_add, self._button_history, self._button_reports):
@@ -191,11 +222,31 @@ class RootUI(BoxLayout):
             box._dock_icon.text_color = color
             box._dock_label.text_color = color
 
-        app = App.get_running_app()
-        if tab_name == "history":
-            Clock.schedule_once(lambda dt: self.history_screen.refresh, 0)
-        elif tab_name == "reports":
-            Clock.schedule_once(lambda dt: self.reports_screen.refresh, 0)
+    def _set_bg_segment(self, index: int):
+        self.bg_u = max(0.0, min(2.0 / 3.0, index / 3.0))
+
+    def _animate_tab_switch(self, tab_name: str):
+        from kivy.animation import Animation
+        from kivy.uix.screenmanager import SlideTransition
+
+        tab_order = {"add": 0, "history": 1, "reports": 2}
+        current = tab_order.get(self.screen_manager.current, 0)
+        target = tab_order.get(tab_name, 0)
+
+        if tab_name == "add":
+            target_u = 0.0
+        elif tab_name == "history":
+            target_u = 1.0 / 3.0
+        else:
+            target_u = 2.0 / 3.0
+
+        direction = "left" if target > current else "right"
+
+        self.screen_manager.transition = SlideTransition(
+            duration=0.35, direction=direction
+        )
+        Animation.cancel_all(self, "bg_u")
+        Animation(bg_u=target_u, duration=0.35, t="out_quad").start(self)
 
 
 class TxTrackerApp(MDApp):
@@ -205,6 +256,7 @@ class TxTrackerApp(MDApp):
         self.theme_cls.primary_hue = "200"
         self.theme_cls.accent_palette = "Red"
         self.theme_cls.material_style = "M3"
+        Clock.schedule_interval(self._auto_sync_tick, 60)
 
     def build(self):
         register_all_fonts()
@@ -220,6 +272,12 @@ class TxTrackerApp(MDApp):
     def refresh_history(self):
         try:
             self.root_ui.history_screen.refresh()
+        except Exception:
+            pass
+
+    def _auto_sync_tick(self, *_):
+        try:
+            self.root_ui.history_screen.drive_sync.auto_sync_if_due(self.root_ui.db)
         except Exception:
             pass
 

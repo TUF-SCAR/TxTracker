@@ -6,6 +6,56 @@ Versioning format: finished.all_changes
 
 ---
 
+## ✅ [1.0] — Reports Charts + History Redesign + Drive Sync + Picker UX
+
+### Added
+
+- **Drive sync (Google Drive)**
+  - Link Drive file + sync JSON export
+  - Auto-sync on month-end at 11:00 AM/PM (app open required)
+- **History note/details popup**
+  - Tap card to view full Item + Note in a styled dialog
+- **Tabbed background pan**
+  - Background image pans to left/middle/right thirds per tab
+  - Sideways slide transition synced to background
+
+---
+
+### Changed
+
+- **Reports charts**
+  - Expand/collapse inside cards with smooth animation
+  - Line chart axes + labels (days/months) and dynamic scale (max capped to 90%)
+  - Line/dots match selected card color; smoother line rendering
+- **History screen**
+  - RecycleView-based list with section/group headers
+  - Spacing + fonts refined; clipping fixes
+  - Amount column adjusted to keep values on one line
+- **Date & time pickers**
+  - Themed to match app colors (primary/secondary split)
+  - Future dates disabled inside the picker calendar
+  - Time picker Cancel clears the field
+
+---
+
+### Fixed
+
+- Chart label brightness + readability
+- History delete callback crash
+- RV clipping/bleed artifacts
+- Popup radius error (border_radius)
+
+---
+
+### Status
+
+- UI/UX: **polished**
+- Reports: **stable**
+- History: **stable**
+- Drive sync: **MVP**
+
+---
+
 ## ✅ [0.7] — Final UI Lock-In + Font System + Hero Amount Polish
 
 ### Added

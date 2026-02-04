@@ -1,5 +1,6 @@
 import time
 import sqlite3
+from datetime import date, timedelta
 
 
 class DataBase:
@@ -82,3 +83,87 @@ class DataBase:
                 (start_date, end_date),
             ).fetchone()
             return int(row[0])
+
+    def week_daily_totals(self, week_start: date):
+        start_str = week_start.strftime("%Y-%m-%d")
+        end_str = (week_start + timedelta(days=7)).strftime("%Y-%m-%d")
+
+        with self.connect() as connect:
+            rows = connect.execute(
+                """
+                SELECT date, COALESCE(SUM(amount), 0) AS total FROM transactions
+                WHERE deleted = 0
+                AND date >= ?
+                AND date < ?
+                GROUP BY date
+                """,
+                (start_str, end_str),
+            ).fetchall()
+
+        totals_by_date = {r["date"]: int(r["total"]) for r in rows}
+        out = []
+        for i in range(7):
+            d = (week_start + timedelta(days=i)).strftime("%Y-%m-%d")
+            out.append(totals_by_date.get(d, 0))
+
+        return out
+
+    def month_daily_totals(self, month_start: date):
+        year = month_start.year
+        month = month_start.month
+        if month == 12:
+            next_month_start = date(year + 1, 1, 1)
+        else:
+            next_month_start = date(year, month + 1, 1)
+
+        start_str = month_start.strftime("%Y-%m-%d")
+        end_str = next_month_start.strftime("%Y-%m-%d")
+
+        with self.connect() as connect:
+            rows = connect.execute(
+                """
+                SELECT date, COALESCE(SUM(amount), 0) AS total FROM transactions
+                WHERE deleted = 0
+                AND date >= ?
+                AND date < ?
+                GROUP BY date
+                """,
+                (start_str, end_str),
+            ).fetchall()
+
+        totals_by_date = {r["date"]: int(r["total"]) for r in rows}
+        out = []
+        current_date = month_start
+        while current_date < next_month_start:
+            d_str = current_date.strftime("%Y-%m-%d")
+            out.append(totals_by_date.get(d_str, 0))
+            current_date += timedelta(days=1)
+
+        return out
+
+    def year_monthly_totals(self, year_start: date):
+        year = year_start.year
+        next_year_start = date(year + 1, 1, 1)
+
+        start_str = year_start.strftime("%Y-%m-%d")
+        end_str = next_year_start.strftime("%Y-%m-%d")
+
+        with self.connect() as connect:
+            rows = connect.execute(
+                """
+                SELECT SUBSTR(date, 1, 7) AS month, COALESCE(SUM(amount), 0) AS total FROM transactions
+                WHERE deleted = 0
+                AND date >= ?
+                AND date < ?
+                GROUP BY month
+                """,
+                (start_str, end_str),
+            ).fetchall()
+
+        totals_by_month = {r["month"]: int(r["total"]) for r in rows}
+        out = []
+        for month in range(1, 13):
+            month_str = f"{year}-{month:02d}"
+            out.append(totals_by_month.get(month_str, 0))
+
+        return out

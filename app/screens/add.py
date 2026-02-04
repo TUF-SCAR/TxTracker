@@ -158,7 +158,7 @@ class AddScreen(BoxLayout):
             size_hint=(1, None),
             height=dp(42),
             radius=[18],
-            md_bg_color=(0.96, 0.40, 0.46, 1),
+            md_bg_color=(0.52, 0.10, 0.14, 1.0),
             padding=(dp(16), 0, dp(16), 0),
             elevation=0,
         )
@@ -281,7 +281,6 @@ class AddScreen(BoxLayout):
         self._fit_hero_amount()
 
     def on_save(self, instance):
-
         if self.selected_date_str is None or self.selected_time_str is None:
             self.status_label.text = "Pick date & time"
             return
@@ -312,12 +311,6 @@ class AddScreen(BoxLayout):
             app.refresh_history()
         if app and hasattr(app, "refresh_reports"):
             app.refresh_reports()
-
-        print("Date: ", date_str)
-        print("Time: ", time_str)
-        print("ITEM: ", item)
-        print("AMOUNT: ", amount)
-        print("NOTE: ", note)
 
         self.item_input.text = ""
         self.amount_input.text = ""
@@ -449,7 +442,44 @@ class AddScreen(BoxLayout):
         return False
 
     def open_date_picker(self):
+        from datetime import date
+        from itertools import zip_longest
+
         picker = MDDatePicker()
+        primary = (0.52, 0.10, 0.14, 1.0)
+        secondary = (0.08, 0.09, 0.11, 0.98)
+        picker.md_bg_color = primary
+        picker.background_color = secondary
+        picker.primary_color = primary
+        picker.accent_color = secondary
+        picker.selector_color = primary
+        picker.text_color = (1, 1, 1, 1)
+        picker.text_weekday_color = (1, 1, 1, 0.6)
+        picker.text_toolbar_color = (1, 1, 1, 1)
+        picker.text_button_color = primary
+        picker.line_color = primary
+        picker.font_name = "Inter_24pt-Black"
+
+        def _apply_max_date():
+            today = date.today()
+            dates = picker.calendar.itermonthdates(picker.year, picker.month)
+            for widget, widget_date in zip_longest(picker._calendar_list, dates):
+                if widget is None or widget_date is None:
+                    continue
+                if widget_date > today:
+                    widget.disabled = True
+
+        orig_update = picker.update_calendar
+
+        def _update_calendar_with_limit(year, month):
+            orig_update(year, month)
+            _apply_max_date()
+
+        picker.update_calendar = _update_calendar_with_limit
+        try:
+            picker.update_calendar(picker.year, picker.month)
+        except Exception:
+            pass
         picker.bind(on_save=self.on_date_selected, on_cancel=self.on_picker_cancel)
         picker.open()
 
@@ -460,7 +490,19 @@ class AddScreen(BoxLayout):
 
     def open_time_picker(self):
         picker = MDTimePicker()
-        picker.bind(time=self.on_time_selected)
+        primary = (0.52, 0.10, 0.14, 1.0)
+        secondary = (0.08, 0.09, 0.11, 0.98)
+        picker.md_bg_color = secondary
+        picker.background_color = primary
+        picker.primary_color = secondary
+        picker.accent_color = primary
+        picker.selector_color = primary
+        picker.text_color = (1, 1, 1, 1)
+        picker.text_toolbar_color = (1, 1, 1, 1)
+        picker.text_button_color = primary
+        picker.line_color = primary
+        picker.font_name = "Inter_24pt-Black"
+        picker.bind(time=self.on_time_selected, on_cancel=self.on_time_cancel)
         picker.open()
 
     def on_time_selected(self, instance, time_value):
@@ -471,6 +513,12 @@ class AddScreen(BoxLayout):
 
         display_time = time_24_to_12(self.selected_time_str)
         self.date_time_input.text = f"{self.selected_date_str} • {display_time}"
+
+    def on_time_cancel(self, *args):
+        self.selected_date = None
+        self.selected_date_str = None
+        self.selected_time_str = None
+        self.date_time_input.text = ""
 
     def on_picker_cancel(self, instance, value):
         pass

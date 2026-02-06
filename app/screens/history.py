@@ -240,6 +240,10 @@ class HistoryScreen(BoxLayout):
         self.drive_status.font_name = "Nunito-SemiBold"
         self.drive_status.font_size = "12sp"
 
+        self._set_drive_status(
+            "Drive linked" if self.drive_sync.uri else "Drive sync: not linked"
+        )
+
         self.drive_link_btn = MDFlatButton(text="LINK DRIVE")
         self.drive_link_btn.font_name = "Inter_24pt-Black"
         self.drive_link_btn.font_size = "12sp"

@@ -6,6 +6,26 @@ Versioning format: { finished }.{ all_types_of_changes }
 
 ---
 
+## 🚀 [1.2] — Drive Link Persistence + Release Prep
+
+### Added
+
+- Drive link now **persists after app restart** (saved URI + auto-load on launch)
+- Persisted Drive permission using `takePersistableUriPermission` (so Android doesn’t “forget” the file)
+
+### Changed
+
+- Drive picker uses **Open Document** (select an existing JSON and overwrite it on every sync)
+- UI accent red updated from dull red to brighter red: `rgba(233, 24, 39, 0.8)`
+
+### Notes
+
+- No database changes
+- No breaking changes
+- Repo version: **1.2**
+
+---
+
 ## 🛠 [1.1] — Post-Release Cleanup & UX Improvements
 
 ### Added

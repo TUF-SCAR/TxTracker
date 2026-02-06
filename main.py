@@ -11,7 +11,7 @@ from kivy.utils import platform
 if platform in ("win", "linux", "macosx"):
     Config.set("graphics", "width", "360")
     Config.set("graphics", "height", "800")
-    Config.set("graphics", "resizable", "1")
+    Config.set("graphics", "resizable", "0")
 
 from kivy.clock import Clock
 from kivy.metrics import dp
@@ -255,7 +255,7 @@ class RootUI(BoxLayout):
         Clock.schedule_once(do_switch, 0.01)
         self._animate_tab_switch(tab_name)
 
-        active = (0.52, 0.10, 0.14, 1.0)
+        active = (0.914, 0.094, 0.153, 1.0)
         inactive = (1, 1, 1, 0.60)
 
         for box in (self._button_add, self._button_history, self._button_reports):

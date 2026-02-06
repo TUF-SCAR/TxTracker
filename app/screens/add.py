@@ -96,7 +96,7 @@ class AddScreen(BoxLayout):
         )
         self.hero_cursor.theme_text_color = "Custom"
         self.hero_cursor.padding = (0, 0, 0, dp(7))
-        self.hero_cursor.text_color = (1, 0, 0, 1)
+        self.hero_cursor.text_color = (0.914, 0.094, 0.153, 1.0)
         self.hero_cursor.opacity = 0
 
         self._cursor_ev = None
@@ -171,7 +171,7 @@ class AddScreen(BoxLayout):
             size_hint=(1, None),
             height=dp(42),
             radius=[dp(18)],
-            md_bg_color=(0.52, 0.10, 0.14, 1.0),
+            md_bg_color=(0.914, 0.094, 0.153, 1.0),
             padding=(dp(16), 0, dp(16), 0),
             elevation=0,
         )
@@ -472,7 +472,7 @@ class AddScreen(BoxLayout):
         from itertools import zip_longest
 
         picker = MDDatePicker()
-        primary = (0.52, 0.10, 0.14, 1.0)
+        primary = (0.914, 0.094, 0.153, 1.0)
         secondary = (0.08, 0.09, 0.11, 0.98)
         picker.md_bg_color = primary
         picker.background_color = secondary
@@ -516,7 +516,7 @@ class AddScreen(BoxLayout):
 
     def open_time_picker(self):
         picker = MDTimePicker()
-        primary = (0.52, 0.10, 0.14, 1.0)
+        primary = (0.914, 0.094, 0.153, 1.0)
         secondary = (0.08, 0.09, 0.11, 0.98)
         picker.md_bg_color = secondary
         picker.background_color = primary

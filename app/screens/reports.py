@@ -22,8 +22,8 @@ from app.utils import (
 
 class ReportCard(MDCard):
     _orig_bg = ListProperty([0.08, 0.09, 0.11, 0.92])
-    _sel_bg = ListProperty([0.52, 0.10, 0.14, 1.0])
-    _press_bg = ListProperty([0.62, 0.14, 0.18, 1.0])
+    _sel_bg = ListProperty([0.914, 0.094, 0.153, 1.0])
+    _press_bg = ListProperty([0.95, 0.18, 0.22, 1.0])
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

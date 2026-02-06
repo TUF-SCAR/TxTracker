@@ -29,7 +29,7 @@ source.exclude_exts = spec,pyc,pyo,log,txt,md
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 1.1
+version = 1.2
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -105,6 +105,8 @@ android.api = 34
 
 # (int) Minimum API your APK / AAB will support.
 android.minapi = 21
+
+android.debuggable = 0
 
 # (int) Android SDK version to use
 #android.sdk = 20
@@ -287,7 +289,7 @@ android.archs = arm64-v8a,armeabi-v7a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing
-# android.numeric_version = 1
+android.numeric_version = 12
 
 # (bool) enables Android auto backup feature (Android API >=23)
 android.allow_backup = True
@@ -305,7 +307,13 @@ android.allow_backup = True
 # android.no-byte-compile-python = False
 
 # (str) The format used to package the app for release mode (aab or apk or aar).
-# android.release_artifact = aab
+android.release_artifact = apk
+
+# --- Release signing (required for a proper release APK) ---
+android.release_keystore = D:/Keys/txtracker_release.jks
+android.release_keyalias = txtracker
+# android.release_keystore_passwd =
+# android.release_keyalias_passwd =
 
 # (str) The format used to package the app for debug mode (apk or aar).
 # android.debug_artifact = apk

@@ -310,7 +310,7 @@ android.allow_backup = True
 android.release_artifact = apk
 
 # --- Release signing (required for a proper release APK) ---
-android.release_keystore = D:/Keys/txtracker_release.jks
+android.release_keystore = /mnt/d/Keys/txtracker_release.jks
 android.release_keyalias = txtracker
 # android.release_keystore_passwd =
 # android.release_keyalias_passwd =

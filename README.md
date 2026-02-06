@@ -74,33 +74,33 @@ I made this for myself, designed for me. If you want you can fork this and edit,
 
 ## 📦 Project Structure
 
-TxTracker/
-├─ main.py # App entry point
-├─ buildozer.spec # Android build config
-├─ requirements.txt
+TxTracker/  
+├─ main.py # App entry point  
+├─ buildozer.spec # Android build config    
+├─ requirements.txt  
 │
-├─ app/
-│ ├─ db.py # SQLite database layer
-│ ├─ utils.py # Helpers (formatting, conversions)
-│ │
-│ ├─ screens/
-│ │ ├─ add.py # Add transaction screen
-│ │ ├─ history.py # History screen
-│ │ └─ reports.py # Reports screen
-│ │
-│ ├─ services/
-│ │ └─ drive_sync.py # Google Drive sync logic
-│ │
-│ └─ widgets/
-│ └─ line_chart.py # Custom chart widget
-│
-├─ assets/
-│ ├─ fonts/
-│ └─ background.png
-│
-├─ Channel_Log.md # Full changelog
-├─ .gitignore
-└─ README.md
+├─ app/  
+│ ├─ db.py # SQLite database layer  
+│ ├─ utils.py # Helpers (formatting, conversions)  
+│ │  
+│ ├─ screens/  
+│ │ ├─ add.py # Add transaction screen  
+│ │ ├─ history.py # History screen  
+│ │ └─ reports.py # Reports screen  
+│ │  
+│ ├─ services/    
+│ │ └─ drive_sync.py # Google Drive sync logic  
+│ │  
+│ └─ widgets/  
+│ └─ line_chart.py # Custom chart widget  
+│  
+├─ assets/  
+│ ├─ fonts/  
+│ └─ background.png  
+│  
+├─ Channel_Log.md # Full changelog  
+├─ .gitignore  
+└─ README.md  
 
 ---
 

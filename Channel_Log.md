@@ -2,7 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
-Versioning format: finished.all_changes
+Versioning format: { finished }.{ all_types_of_changes }
+
+---
+
+## 🛠 [1.1] — Post-Release Cleanup & UX Improvements
+
+### Added
+
+- Status message auto-reset on Add screen (10-second timeout)
+- Improved internal code organization and readability
+- Safer Git ignore rules for Android, Buildozer, and local data
+
+### Changed
+
+- Add screen layout consistency across Android and desktop
+- Minor spacing and sizing refinements using `dp()`
+- Versioning clarified between app releases and repository changes
+
+### Fixed
+
+- Status text persisting indefinitely after save/error
+- Minor layout shifts caused by system navigation bar
+- Internal build and packaging edge cases
+
+### Notes
+
+- No database changes
+- No breaking changes
+- Android app version is now **1.1**
+- There was a error in version **1.0** I forgot to import ceil correctly opss
+- I would have put this app on Google Play Store but it costs 25$ - 2200₹ so NO
 
 ---
 

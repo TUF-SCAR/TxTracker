@@ -1,3 +1,7 @@
+# A simple SQLite database wrapper for managing transactions in the TxTracker app.
+# It provides methods for adding transactions, listing transactions, soft deleting (marking as deleted), hard deleting (removing from database) and undoing deletes.
+# It also has methods for calculating totals between dates and generating data for charts in the reports screen.
+
 import time
 import sqlite3
 from datetime import date, timedelta

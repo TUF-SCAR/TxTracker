@@ -1,5 +1,8 @@
-from math import ceil
+# A custom widget for displaying a line chart of transaction data, used in the reports screen.
+# It supports smooth animations when the data changes, and automatically scales the y-axis with nice round numbers.
+
 import math
+from math import ceil
 from kivy.metrics import dp, sp
 from kivy.animation import Animation
 from kivy.uix.widget import Widget
@@ -21,7 +24,9 @@ class LineChart(Widget):
 
         with self.canvas.before:
             Color(0.04, 0.05, 0.07, 0.5)
-            self._bg_rect = RoundedRectangle(pos=self.pos, size=self.size, radius=[dp(14)])
+            self._bg_rect = RoundedRectangle(
+                pos=self.pos, size=self.size, radius=[dp(14)]
+            )
 
         with self.canvas:
             self._line_color_instr = Color(*self.line_color)

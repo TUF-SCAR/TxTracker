@@ -1,5 +1,9 @@
-from datetime import date, timedelta
+# A screen for viewing transaction reports, with sections for "This Week", "This Month" and "This Year".
+# Each section shows the total amount spent and a line chart of daily/monthly totals.
+# Tapping a section expands/collapses the chart with animation.
+
 import calendar
+from datetime import date, timedelta
 from kivy.metrics import dp
 from kivy.animation import Animation
 from kivy.uix.boxlayout import BoxLayout
@@ -136,7 +140,7 @@ class ReportScreen(BoxLayout):
             spacing=dp(6),
             size_hint_y=None,
             height=dp(100),
-            radius=[22],
+            radius=[dp(22)],
             elevation=0,
         )
         card.register_event_type("on_release")

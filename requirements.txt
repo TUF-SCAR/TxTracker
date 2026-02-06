@@ -1,2 +1,8 @@
-kivy
-kivymd
+# Core UI framework
+kivy>=2.3.0
+
+# Material Design components
+kivymd>=1.2.0
+
+# Image handling (required by KivyMD pickers)
+pillow

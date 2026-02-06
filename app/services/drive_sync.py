@@ -1,3 +1,7 @@
+# A service for syncing transaction data to Google Drive.
+# On Android, it uses the Storage Access Framework to let the user choose a file location,
+# then writes a JSON export of the transactions. It also has an auto-sync feature that triggers at the end of each month.
+
 import json
 import time
 from datetime import date, datetime, timedelta

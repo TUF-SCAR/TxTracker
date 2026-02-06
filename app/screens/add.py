@@ -1,3 +1,5 @@
+# A screen for adding a new transaction, with fields for date, time, item name, amount and note.
+
 import time
 from datetime import datetime
 from kivy.app import App
@@ -20,23 +22,23 @@ class AddScreen(BoxLayout):
 
         self.db = db
         self.orientation = "vertical"
-        self.padding = (12, 18, 12, 12)
-        self.spacing = 6
+        self.padding = (dp(12), dp(18), dp(12), dp(12))
+        self.spacing = dp(6)
 
         card = MDCard(
             orientation="vertical",
-            padding=(18, 18, 18, 18),
-            spacing=10,
+            padding=((dp(18)), dp(18), dp(18), dp(18)),
+            spacing=dp(10),
             size_hint=(0.92, None),
-            radius=[24],
+            radius=[dp(24)],
         )
         card.md_bg_color = (0.08, 0.09, 0.11, 0.92)
         card.elevation = 0
-        card.height = 400
+        card.height = dp(400)
         card.pos_hint = {"center_x": 0.5}
 
         self.date_time_input = MDTextField(
-            hint_text="Date & Time (tap to pick)*",
+            hint_text="Date & Time*",
             readonly=True,
         )
         self.date_time_input.font_name_hint_text = "Nunito-Medium"
@@ -48,7 +50,7 @@ class AddScreen(BoxLayout):
         self.item_input.font_name_hint_text = "Nunito-Medium"
 
         hero_wrap = AnchorLayout(size_hint_y=None, height=dp(72))
-        hero_wrap.padding = (0, 0, 0, 100)
+        hero_wrap.padding = (0, 0, 0, (dp(28)))
         self.hero_wrap = hero_wrap
 
         hero_row = BoxLayout(
@@ -78,7 +80,7 @@ class AddScreen(BoxLayout):
             halign="left",
             font_style="H3",
             size_hint=(None, None),
-            height=(dp(72)),
+            height=dp(72),
         )
         self.hero_amount.font_name = "Roboto-Regular"
         self.hero_amount.text_size = (None, None)
@@ -93,7 +95,7 @@ class AddScreen(BoxLayout):
             size=(dp(10), dp(72)),
         )
         self.hero_cursor.theme_text_color = "Custom"
-        self.hero_cursor.padding = (0, 0, 0, 7)
+        self.hero_cursor.padding = (0, 0, 0, dp(7))
         self.hero_cursor.text_color = (1, 0, 0, 1)
         self.hero_cursor.opacity = 0
 
@@ -110,11 +112,9 @@ class AddScreen(BoxLayout):
             halign="center",
             size_hint_y=None,
             height=dp(34),
-            padding=(0, 0, 0, 240),
         )
         add_transaction.font_name = "Cause-Black"
         add_transaction.font_size = "28sp"
-        self.add_widget(add_transaction)
 
         total_amount = MDLabel(
             text="TOTAL AMOUNT",
@@ -122,13 +122,21 @@ class AddScreen(BoxLayout):
             theme_text_color="Hint",
             size_hint_y=None,
             height=dp(18),
-            padding=(0, 0, 0, 80),
         )
         total_amount.font_name = "Nunito-Black"
         total_amount.font_size = "12sp"
-        self.add_widget(total_amount)
+        top_section = BoxLayout(
+            orientation="vertical",
+            size_hint_y=None,
+            spacing=dp(8),
+        )
+        top_section.add_widget(add_transaction)
+        top_section.add_widget(BoxLayout(size_hint_y=None, height=dp(5)))
+        top_section.add_widget(total_amount)
+        top_section.add_widget(hero_wrap)
+        top_section.bind(minimum_height=top_section.setter("height"))
 
-        self.add_widget(hero_wrap)
+        self.add_widget(top_section)
 
         self.amount_input = MDTextField(
             text="",
@@ -150,14 +158,19 @@ class AddScreen(BoxLayout):
         self.note_input.font_name_hint_text = "Nunito-Medium"
 
         self.status_label = MDLabel(
-            text="", halign="center", size_hint_y=None, height=24
+            text="Fill details and press Save",
+            halign="center",
+            size_hint_y=None,
+            height=dp(24),
         )
         self.status_label.font_name = "ComicSansMS3"
+        self._status_default_text = self.status_label.text
+        self._status_reset_event = None
 
         self.save_button = MDCard(
             size_hint=(1, None),
             height=dp(42),
-            radius=[18],
+            radius=[dp(18)],
             md_bg_color=(0.52, 0.10, 0.14, 1.0),
             padding=(dp(16), 0, dp(16), 0),
             elevation=0,
@@ -200,7 +213,7 @@ class AddScreen(BoxLayout):
             p = MDCard(
                 size_hint_y=None,
                 height=dp(70),
-                radius=[18],
+                radius=[dp(18)],
                 md_bg_color=(0.05, 0.06, 0.07, 0.85),
                 padding=(dp(10), dp(8), dp(10), dp(8)),
                 elevation=0,
@@ -280,9 +293,22 @@ class AddScreen(BoxLayout):
         self.add_widget(card)
         self._fit_hero_amount()
 
+    def set_status(self, text: str):
+        self.status_label.text = text
+
+        if self._status_reset_event is not None:
+            self._status_reset_event.cancel()
+            self._status_reset_event = None
+
+        self._status_reset_event = Clock.schedule_once(self._reset_status, 5)
+
+    def _reset_status(self, *_):
+        self.status_label.text = self._status_default_text
+        self._status_reset_event = None
+
     def on_save(self, instance):
         if self.selected_date_str is None or self.selected_time_str is None:
-            self.status_label.text = "Pick date & time"
+            self.set_status("Pick date & time")
             return
 
         date_str = self.selected_date_str
@@ -293,18 +319,18 @@ class AddScreen(BoxLayout):
         note = self.note_input.text.strip()
 
         if not item:
-            self.status_label.text = "Item required"
+            self.set_status("Item required")
             return
 
         try:
             amount = rupees_to_paise(amount_text)
         except Exception:
-            self.status_label.text = "Invalid amount"
+            self.set_status("Invalid amount")
             return
 
         self.db.add_transaction(date_str, time_str, item, amount, note)
 
-        self.status_label.text = "Saved"
+        self.set_status("Saved")
 
         app = App.get_running_app()
         if app and hasattr(app, "refresh_history"):

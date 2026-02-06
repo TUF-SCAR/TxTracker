@@ -1,3 +1,6 @@
+# A screen for viewing transaction history, with sections for "This Week", "This Month" and "Older".
+# Each transaction shows item name, note, date/time and amount. Transactions can be deleted with an undo option.
+
 from datetime import date, timedelta
 from functools import partial
 from kivy.app import App
@@ -57,7 +60,7 @@ class HistoryRow(RecycleDataViewBehavior, BoxLayout):
         self.card = MDCard(
             orientation="horizontal",
             size_hint_y=None,
-            radius=[18],
+            radius=[dp(18)],
             height=dp(96),
             padding=(dp(14), dp(12), dp(14), dp(12)),
             spacing=dp(12),
@@ -76,7 +79,7 @@ class HistoryRow(RecycleDataViewBehavior, BoxLayout):
         self.item_field.shorten_from = "right"
         self.note_field = MDLabel(
             font_style="Caption",
-            padding=(dp(5), dp(2), 0, 0),
+            padding=(0, dp(2), 0, 0),
             size_hint_y=None,
             height=dp(22),
             valign="top",
@@ -94,9 +97,9 @@ class HistoryRow(RecycleDataViewBehavior, BoxLayout):
         self.note_field.font_name = "Nunito-ExtraBold"
         self.date_time_field.font_name = "Nunito-Black"
 
-        self.item_field.font_size = "26sp"
-        self.note_field.font_size = "16sp"
-        self.date_time_field.font_size = "10sp"
+        self.item_field.font_size = "24sp"
+        self.note_field.font_size = "14sp"
+        self.date_time_field.font_size = "8sp"
 
         left = BoxLayout(orientation="vertical", size_hint_x=1)
         left.add_widget(self.item_field)
@@ -216,8 +219,8 @@ class HistoryScreen(BoxLayout):
 
         self.db = db
         self.orientation = "vertical"
-        self.padding = 12
-        self.spacing = 10
+        self.padding = dp(12)
+        self.spacing = dp(10)
         self.last_deleted_id = None
         self.drive_sync = DriveSyncService()
         self.drive_sync.set_status_callback(self._set_drive_status)
@@ -274,15 +277,16 @@ class HistoryScreen(BoxLayout):
         self.undo_bar = MDCard(
             orientation="horizontal",
             size_hint_y=None,
-            height=56,
-            padding=12,
-            spacing=12,
+            height=dp(56),
+            padding=dp(12),
+            spacing=dp(12),
         )
         self.undo_label = MDLabel(text="", valign="middle")
         self.undo_label.font_name = "Inter_24pt-Bold"
+        self.undo_label.font_size = "12sp"
         self.undo_button = MDFlatButton(text="UNDO")
         self.undo_button.font_name = "Inter_24pt-Black"
-        self.undo_button.font_size = "16sp"
+        self.undo_button.font_size = "10sp"
         self.undo_button.bind(on_press=self.undo_last_delete)
 
         self.undo_bar.add_widget(self.undo_label)
@@ -290,7 +294,7 @@ class HistoryScreen(BoxLayout):
 
         self.delete_button = MDFlatButton(text="PERMANENT DELETE")
         self.delete_button.font_name = "Inter_24pt-Black"
-        self.delete_button.font_size = "16sp"
+        self.delete_button.font_size = "10sp"
         self.delete_button.bind(on_press=self.delete_last_permanently)
 
         self.undo_bar.add_widget(self.delete_button)
@@ -496,7 +500,7 @@ class HistoryScreen(BoxLayout):
         self._note_dialog = MDDialog(
             title="Details",
             text=text,
-            radius=[24, 24, 24, 24],
+            radius=[(dp(24)), dp(24), dp(24), dp(24)],
             md_bg_color=(0.08, 0.09, 0.11, 0.98),
             buttons=[close_btn],
         )

@@ -1,22 +1,30 @@
-# Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
-.venv/
-env/
-
-# Kivy
 *.log
 
-# Buildozer
+.venv/
+venv/
+env/
+
 .buildozer/
 bin/
-android/
+*.apk
+*.aab
 
-# Local database
-*.sqlite3
+.gradle/
+local.properties
 
-# OS
 .DS_Store
 Thumbs.db
+
+*.sqlite3
+
+Config/settings.json
+Config/intents.json
+
+.vscode/
+.idea/
+
+_backup_before_format/

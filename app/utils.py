@@ -1,3 +1,5 @@
+# Utility functions for the TxTracker app, including currency conversion, date formatting and parsing, and time formatting.
+
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, date, timedelta
 

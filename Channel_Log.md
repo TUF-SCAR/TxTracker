@@ -6,6 +6,15 @@ Versioning format: { finished }.{ all_types_of_changes }
 
 ---
 
+## [2.1] — Minor Change
+
+### Fixed
+
+- **Reports screen**
+  - reports tab colours are now in sync with settings
+
+---
+
 ## 🚀 [2.0] — Release Build Prep + Full Settings Customisation Pass
 
 ### Added

@@ -1,8 +1,10 @@
 from datetime import date, timedelta
+from kivy.app import App
 from kivy.metrics import dp
 from kivy.animation import Animation
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ListProperty
+from kivy.storage.jsonstore import JsonStore
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from app.widgets.line_chart import LineChart
@@ -102,11 +104,18 @@ class ReportScreen(BoxLayout):
         self.month_chart = LineChart(size_hint=(1, None), height=0)
         self.year_chart = LineChart(size_hint=(1, None), height=0)
 
+        accent = self._accent_rgba()
+        press = self._accent_press_rgba()
+
+        for card in (self.card_week, self.card_month, self.card_year):
+            card._sel_bg = accent[:]
+            card._press_bg = press[:]
+
         for c in (self.week_chart, self.month_chart, self.year_chart):
             c.opacity = 0
             c.disabled = True
             c.size_hint_y = None
-            c.set_colors(self.card_week._sel_bg, self.card_week._sel_bg)
+            c.set_colors(accent, accent)
 
         cards_col.add_widget(self.card_week)
         cards_col.add_widget(self.week_chart)
@@ -127,6 +136,51 @@ class ReportScreen(BoxLayout):
 
         for chart in (self.week_chart, self.month_chart, self.year_chart):
             chart.bind(height=_sync, opacity=_sync)
+
+    def _get_pref(self, key, default):
+        try:
+            app = App.get_running_app()
+            base = app.user_data_dir if app else "."
+            store = JsonStore(f"{base}/settings.json")
+            if store.exists("prefs"):
+                data = store.get("prefs")
+                if key in data:
+                    return data.get(key, default)
+        except Exception:
+            pass
+        return default
+
+    def _accent_rgba(self):
+        accent = self._get_pref("accent_color", "red")
+        palette = {
+            "red": [0.914, 0.094, 0.153, 1.0],
+            "blue": [0.18, 0.52, 0.98, 1.0],
+            "purple": [0.62, 0.33, 0.95, 1.0],
+            "green": [0.18, 0.72, 0.38, 1.0],
+        }
+        return palette.get(accent, palette["red"])
+
+    def _accent_press_rgba(self):
+        accent = self._accent_rgba()
+        return [
+            min(1.0, accent[0] + 0.08),
+            min(1.0, accent[1] + 0.08),
+            min(1.0, accent[2] + 0.08),
+            1.0,
+        ]
+
+    def apply_prefs(self):
+        accent = self._accent_rgba()
+        press = self._accent_press_rgba()
+
+        for card in (self.card_week, self.card_month, self.card_year):
+            card._sel_bg = accent[:]
+            card._press_bg = press[:]
+            if card._is_open:
+                card.md_bg_color = accent[:]
+
+        for chart in (self.week_chart, self.month_chart, self.year_chart):
+            chart.set_colors(accent, accent)
 
     def make_card(self, title, value, key):
         card = ReportCard(
@@ -179,6 +233,8 @@ class ReportScreen(BoxLayout):
         else:
             self._selected = key
 
+        self.apply_prefs()
+
         mapping = {
             "week": (self.week_chart, self._week_vals, self._week_labels),
             "month": (self.month_chart, self._month_vals, self._month_labels),
@@ -227,6 +283,8 @@ class ReportScreen(BoxLayout):
             c.set_opened(c._key == self._selected)
 
     def refresh(self):
+        self.apply_prefs()
+
         today = date.today()
 
         week_start = start_of_week_sun(today)

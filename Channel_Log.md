@@ -6,6 +6,67 @@ Versioning format: { finished }.{ all_types_of_changes }
 
 ---
 
+## 🚀 [2.0] — Release Build Prep + Full Settings Customisation Pass
+
+### Added
+
+- **Expanded Settings system**
+  - Appearance settings
+  - Navigation settings
+  - Add screen behavior settings
+- **Appearance customisation**
+  - Background dim strength: Off / Low / Medium / High
+  - Card transparency: Glass / Normal / Dark
+  - Accent color: Red / Blue / Purple / Green
+  - Larger UI text mode
+  - Layout spacing: Normal / Compact
+  - Corner style: Soft / Rounded / Extra
+- **Navigation customisation**
+  - Bottom dock height: Normal / Tall
+  - Bottom dock lift: Normal / High
+  - Show labels under nav icons: On / Off
+  - Animation speed: Normal / Fast / Off
+- **Add screen customisation**
+  - Auto focus item on open
+  - Auto reopen keyboard after save
+  - Save status timeout: Short / Normal / Long
+  - Default note retain
+  - Amount font size mode: Auto / Smaller / Bigger
+- **Hardcoded Settings layout controls**
+  - Easier manual alignment for settings cards and controls
+  - Consistent fixed-width settings panels
+
+### Changed
+
+- **Settings screen**
+  - Reworked from simple toggle layout to multi-section customisation layout
+  - Backup / restore controls kept separate and easier to tune visually
+  - Settings card widths are now hardcoded for more consistent alignment
+- **Main UI**
+  - Accent color now updates navigation highlight and Add screen visuals
+  - Background dim and dock layout settings now apply visually across the app
+  - Dock can now hide/show labels and change height/lift without changing app logic
+- **Add screen**
+  - Save behavior now follows settings-based defaults
+  - UI style now respects appearance settings
+  - Amount header sizing now responds to the selected amount font size mode
+
+### Fixed
+
+- Settings back navigation now returns correctly to the previous screen
+- Bottom dock overlap handling improved for phones with system navigation buttons
+- Settings alignment is more stable across desktop and Android
+- Save behavior defaults are now cleaner and easier to control
+
+### Notes
+
+- This is the **2.0 release candidate / release build target**
+- Current chart system is intentionally kept unchanged in this release
+- Android signed build testing will be done after this version
+- Repo version: **2.0**
+
+---
+
 ## 🚀 [1.4] — Settings Screen + JSON Import + Pre-APK Stability Pass
 
 ### Added

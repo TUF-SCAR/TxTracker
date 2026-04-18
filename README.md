@@ -17,10 +17,13 @@ I made this for myself, designed for me. If you want you can fork this and edit,
 - Item name, amount (₹ INR formatting), optional note
 - Large, responsive amount input with live formatting
 - Clear validation feedback
-- Fast-entry preferences (can toggle in settings):
-  - keep date after save
-  - keep time after save
-  - keep note after save
+- Fast-entry behavior settings:
+  - keep date & time after save
+  - default note retain
+  - auto focus item on open
+  - auto reopen keyboard after save
+  - save status timeout
+  - amount font size mode
 
 ### 📜 History
 
@@ -37,13 +40,26 @@ I made this for myself, designed for me. If you want you can fork this and edit,
 - Dynamic scaling
 - Smooth animations
 - Custom chart widget with tuned label spacing
+- Reports visuals intentionally kept stable for this release
 
 ### ⚙️ Settings
 
 - Separate settings screen opened from the gear icon
 - Backup/import controls
-- Entry preference toggles
 - Backup status + last backup time
+- Appearance customisation:
+  - background dim strength
+  - card transparency
+  - accent color
+  - larger UI text
+  - compact or normal spacing
+  - corner style
+- Navigation customisation:
+  - dock height
+  - dock lift
+  - show/hide nav labels
+  - animation speed
+- Add screen behavior controls
 
 ### 🔁 Backup & Import
 
@@ -67,13 +83,13 @@ I made this for myself, designed for me. If you want you can fork this and edit,
 
 ## 📱 Platforms
 
-| Platform            | Status              |
-| ------------------- | ------------------- |
-| Android (14+)       | ⚠️ Needs final test |
-| Android (arm64-v8a) | ⚠️ Needs final test |
-| Windows             | ✅ Supported        |
-| Linux               | ✅ Supported        |
-| macOS               | ⚠️ Untested         |
+| Platform            | Status                    |
+| ------------------- | ------------------------- |
+| Android (14+)       | ⚠️ Final signed test next |
+| Android (arm64-v8a) | ⚠️ Final signed test next |
+| Windows             | ✅ Supported              |
+| Linux               | ✅ Supported              |
+| macOS               | ⚠️ Untested               |
 
 ---
 
@@ -150,8 +166,8 @@ buildozer android debug
 
 ## 🧾 Versioning
 
-- App version: 1.1 (stable)
-- Repository version: 1.4
+- App version: 2.0 (stable)
+- Repository version: 2.0
 - Full history in `Channel_Log.md`
 
 ---
@@ -174,4 +190,5 @@ MIT License — see the `LICENSE` file for details.
 - This app intentionally avoids over-engineering
 - KivyMD 1.2.0 is retained for stability
 - UI logic is kept Python-only for clarity
-- Drive/JSON behavior is implemented, with final Android verification pending
+- Drive/JSON backup and import are implemented
+- The 2.0 release focuses on stability, fast entry, and broad UI customisation

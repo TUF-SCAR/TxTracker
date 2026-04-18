@@ -29,18 +29,20 @@ class AddScreen(BoxLayout):
         self._cursor_ev = None
         self._cursor_on = False
         self._status_reset_event = None
+        self._accent_rgba = (0.914, 0.094, 0.153, 1.0)
+        self._amount_font_bias = 0
 
-        card = MDCard(
+        self.main_card = MDCard(
             orientation="vertical",
             padding=(dp(18), dp(18), dp(18), dp(18)),
             spacing=dp(10),
             size_hint=(0.92, None),
             radius=[dp(24)],
         )
-        card.md_bg_color = (0.08, 0.09, 0.11, 0.92)
-        card.elevation = 0
-        card.height = dp(400)
-        card.pos_hint = {"center_x": 0.5}
+        self.main_card.md_bg_color = (0.08, 0.09, 0.11, 0.92)
+        self.main_card.elevation = 0
+        self.main_card.height = dp(400)
+        self.main_card.pos_hint = {"center_x": 0.5}
 
         self.date_time_input = MDTextField(
             hint_text="Date & Time*",
@@ -98,7 +100,7 @@ class AddScreen(BoxLayout):
         )
         self.hero_cursor.theme_text_color = "Custom"
         self.hero_cursor.padding = (0, 0, 0, dp(7))
-        self.hero_cursor.text_color = (0.914, 0.094, 0.153, 1.0)
+        self.hero_cursor.text_color = self._accent_rgba
         self.hero_cursor.opacity = 0
 
         hero_row.add_widget(self.hero_rupee)
@@ -106,33 +108,33 @@ class AddScreen(BoxLayout):
         hero_row.add_widget(self.hero_cursor)
         hero_wrap.add_widget(hero_row)
 
-        add_transaction = MDLabel(
+        self.add_transaction_label = MDLabel(
             text="Add Transaction",
             halign="center",
             size_hint_y=None,
             height=dp(34),
         )
-        add_transaction.font_name = "Cause-Black"
-        add_transaction.font_size = "28sp"
+        self.add_transaction_label.font_name = "Cause-Black"
+        self.add_transaction_label.font_size = "28sp"
 
-        total_amount = MDLabel(
+        self.total_amount_label = MDLabel(
             text="TOTAL AMOUNT",
             halign="center",
             theme_text_color="Hint",
             size_hint_y=None,
             height=dp(18),
         )
-        total_amount.font_name = "Nunito-Black"
-        total_amount.font_size = "12sp"
+        self.total_amount_label.font_name = "Nunito-Black"
+        self.total_amount_label.font_size = "12sp"
 
         top_section = BoxLayout(
             orientation="vertical",
             size_hint_y=None,
             spacing=dp(8),
         )
-        top_section.add_widget(add_transaction)
+        top_section.add_widget(self.add_transaction_label)
         top_section.add_widget(BoxLayout(size_hint_y=None, height=dp(5)))
-        top_section.add_widget(total_amount)
+        top_section.add_widget(self.total_amount_label)
         top_section.add_widget(hero_wrap)
         top_section.bind(minimum_height=top_section.setter("height"))
 
@@ -170,23 +172,23 @@ class AddScreen(BoxLayout):
             size_hint=(1, None),
             height=dp(42),
             radius=[dp(18)],
-            md_bg_color=(0.914, 0.094, 0.153, 1.0),
+            md_bg_color=self._accent_rgba,
             padding=(dp(16), 0, dp(16), 0),
             elevation=0,
         )
 
         button_row = BoxLayout(orientation="horizontal")
-        button_text = MDLabel(
+        self.button_text = MDLabel(
             text="Save Transaction",
             halign="center",
             valign="middle",
             bold=True,
         )
-        button_text.font_name = "Inter_24pt-Bold"
-        button_text.font_size = "22sp"
-        button_text.theme_text_color = "Custom"
-        button_text.text_color = (0, 0, 0, 1)
-        button_row.add_widget(button_text)
+        self.button_text.font_name = "Inter_24pt-Bold"
+        self.button_text.font_size = "22sp"
+        self.button_text.theme_text_color = "Custom"
+        self.button_text.text_color = (0, 0, 0, 1)
+        button_row.add_widget(self.button_text)
 
         self.save_button.add_widget(button_row)
         self.save_button.bind(on_press=self.on_save)
@@ -206,9 +208,9 @@ class AddScreen(BoxLayout):
             f.line_width = 0
             f.line_width_focus = 0
 
-        def pill_row(
-            field, left_icon: str, right_icon: str | None = None, on_right=None
-        ):
+        self.pill_cards = []
+
+        def pill_row(field, left_icon, right_icon=None, on_right=None):
             p = MDCard(
                 size_hint_y=None,
                 height=dp(70),
@@ -248,35 +250,36 @@ class AddScreen(BoxLayout):
                 row.add_widget(right)
 
             p.add_widget(row)
+            self.pill_cards.append(p)
             return p
 
-        item_name = MDLabel(
+        self.item_name_label = MDLabel(
             text="ITEM NAME",
             font_style="Caption",
             theme_text_color="Hint",
             size_hint_y=None,
             height=dp(16),
         )
-        item_name.font_name = "Nunito-Black"
-        item_name.font_size = "14sp"
+        self.item_name_label.font_name = "Nunito-Black"
+        self.item_name_label.font_size = "14sp"
 
-        card.add_widget(item_name)
-        card.add_widget(pill_row(self.item_input, "tag-outline"))
-
-        details = MDLabel(
+        self.details_label = MDLabel(
             text="DETAILS",
             font_style="Caption",
             theme_text_color="Hint",
             size_hint_y=None,
             height=dp(16),
         )
-        details.font_name = "Nunito-Black"
-        details.font_size = "14sp"
+        self.details_label.font_name = "Nunito-Black"
+        self.details_label.font_size = "14sp"
 
-        card.add_widget(details)
-        card.add_widget(pill_row(self.note_input, "pencil-outline"))
+        self.main_card.add_widget(self.item_name_label)
+        self.main_card.add_widget(pill_row(self.item_input, "tag-outline"))
 
-        card.add_widget(
+        self.main_card.add_widget(self.details_label)
+        self.main_card.add_widget(pill_row(self.note_input, "pencil-outline"))
+
+        self.main_card.add_widget(
             pill_row(
                 self.date_time_input,
                 "calendar-month-outline",
@@ -285,30 +288,125 @@ class AddScreen(BoxLayout):
             )
         )
 
-        card.add_widget(self.status_label)
-        card.add_widget(self.save_button)
+        self.main_card.add_widget(self.status_label)
+        self.main_card.add_widget(self.save_button)
 
-        self.add_widget(card)
+        self.add_widget(self.main_card)
+        self.apply_prefs()
         self._fit_hero_amount()
 
-    def _get_prefs(self):
+    def _store(self):
         app = App.get_running_app()
-        store_base = app.user_data_dir if app else "."
-        store = JsonStore(f"{store_base}/settings.json")
+        base = app.user_data_dir if app else "."
+        return JsonStore(f"{base}/settings.json")
 
-        prefs = {
-            "keep_date_after_save": True,
-            "keep_time_after_save": True,
-            "keep_note_after_save": False,
-        }
-
+    def _get_pref(self, key, default, legacy_fallback=None):
+        store = self._store()
         if store.exists("prefs"):
-            saved = store.get("prefs")
-            prefs["keep_date_after_save"] = saved.get("keep_date_after_save", True)
-            prefs["keep_time_after_save"] = saved.get("keep_time_after_save", True)
-            prefs["keep_note_after_save"] = saved.get("keep_note_after_save", False)
+            data = store.get("prefs")
+            if key in data:
+                return data.get(key, default)
+            if legacy_fallback and legacy_fallback in data:
+                old = data.get(legacy_fallback)
+                if isinstance(default, str):
+                    return "on" if old else "off"
+                return old
+        return default
 
-        return prefs
+    def _accent_rgba_from_pref(self):
+        accent = self._get_pref("accent_color", "red")
+        palette = {
+            "red": (0.914, 0.094, 0.153, 1.0),
+            "blue": (0.18, 0.52, 0.98, 1.0),
+            "purple": (0.62, 0.33, 0.95, 1.0),
+            "green": (0.18, 0.72, 0.38, 1.0),
+        }
+        return palette.get(accent, palette["red"])
+
+    def _card_alpha_from_pref(self):
+        mode = self._get_pref("card_transparency", "normal")
+        return {
+            "glass": 0.74,
+            "normal": 0.92,
+            "dark": 0.98,
+        }.get(mode, 0.92)
+
+    def _corner_radius_from_pref(self):
+        mode = self._get_pref("corner_style", "rounded")
+        return {
+            "soft": dp(16),
+            "rounded": dp(24),
+            "extra": dp(32),
+        }.get(mode, dp(24))
+
+    def _status_timeout_seconds(self):
+        mode = self._get_pref("save_status_timeout", "normal")
+        return {
+            "short": 3,
+            "normal": 5,
+            "long": 8,
+        }.get(mode, 5)
+
+    def apply_prefs(self):
+        self._accent_rgba = self._accent_rgba_from_pref()
+        alpha = self._card_alpha_from_pref()
+        radius = self._corner_radius_from_pref()
+        large_ui = self._get_pref("large_ui_text", "off") == "on"
+        compact = self._get_pref("compact_mode", "normal") == "compact"
+        amount_mode = self._get_pref("amount_font_size_mode", "auto")
+
+        self._amount_font_bias = {
+            "auto": 0,
+            "smaller": -6,
+            "bigger": 6,
+        }.get(amount_mode, 0)
+
+        self.padding = (
+            (dp(10), dp(14), dp(10), dp(10))
+            if compact
+            else (dp(12), dp(18), dp(12), dp(12))
+        )
+        self.spacing = dp(4) if compact else dp(6)
+
+        self.main_card.md_bg_color = (0.08, 0.09, 0.11, alpha)
+        self.main_card.radius = [radius]
+        self.main_card.height = dp(382) if compact else dp(400)
+        self.main_card.padding = (
+            (dp(16), dp(16), dp(16), dp(16))
+            if compact
+            else (dp(18), dp(18), dp(18), dp(18))
+        )
+        self.main_card.spacing = dp(8) if compact else dp(10)
+
+        for pill in self.pill_cards:
+            pill.radius = [max(dp(14), radius - dp(6))]
+            pill.md_bg_color = (0.05, 0.06, 0.07, min(alpha, 0.90))
+            pill.height = dp(64) if compact else dp(70)
+
+        self.save_button.radius = [max(dp(14), radius - dp(6))]
+        self.save_button.md_bg_color = self._accent_rgba
+        self.save_button.height = dp(40) if compact else dp(42)
+
+        self.hero_cursor.text_color = self._accent_rgba
+
+        self.add_transaction_label.font_size = "30sp" if large_ui else "28sp"
+        self.total_amount_label.font_size = "13sp" if large_ui else "12sp"
+        self.item_name_label.font_size = "15sp" if large_ui else "14sp"
+        self.details_label.font_size = "15sp" if large_ui else "14sp"
+        self.status_label.font_size = "15sp" if large_ui else "14sp"
+        self.button_text.font_size = "24sp" if large_ui else "22sp"
+
+        self.item_input.font_size = "17sp" if large_ui else "16sp"
+        self.note_input.font_size = "17sp" if large_ui else "16sp"
+        self.date_time_input.font_size = "17sp" if large_ui else "16sp"
+
+        self._fit_hero_amount()
+
+    def on_open(self):
+        if self._get_pref("auto_focus_item_on_open", "on") == "on":
+            Clock.schedule_once(
+                lambda *_: setattr(self.item_input, "focus", True), 0.08
+            )
 
     def set_status(self, text: str):
         self.status_label.text = text
@@ -317,7 +415,10 @@ class AddScreen(BoxLayout):
             self._status_reset_event.cancel()
             self._status_reset_event = None
 
-        self._status_reset_event = Clock.schedule_once(self._reset_status, 5)
+        self._status_reset_event = Clock.schedule_once(
+            self._reset_status,
+            self._status_timeout_seconds(),
+        )
 
     def _reset_status(self, *_):
         self.status_label.text = self._status_default_text
@@ -332,8 +433,6 @@ class AddScreen(BoxLayout):
         if self.selected_date_str and self.selected_time_str:
             display_time = time_24_to_12(self.selected_time_str)
             self.date_time_input.text = f"{self.selected_date_str} • {display_time}"
-        elif self.selected_date_str:
-            self.date_time_input.text = f"{self.selected_date_str} • Pick time again"
         else:
             self.date_time_input.text = ""
 
@@ -368,26 +467,34 @@ class AddScreen(BoxLayout):
         if app and hasattr(app, "refresh_reports"):
             app.refresh_reports()
 
-        prefs = self._get_prefs()
+        keep_datetime = self._get_pref("keep_datetime_after_save", "on") == "on"
+        keep_note = (
+            self._get_pref(
+                "default_note_retain",
+                "off",
+                legacy_fallback="keep_note_after_save",
+            )
+            == "on"
+        )
+        reopen_keyboard = (
+            self._get_pref("auto_reopen_keyboard_after_save", "on") == "on"
+        )
 
         self.item_input.text = ""
         self._clear_amount_ui()
 
-        if not prefs["keep_note_after_save"]:
+        if not keep_note:
             self.note_input.text = ""
 
-        if not prefs["keep_date_after_save"]:
+        if not keep_datetime:
             self.selected_date = None
             self.selected_date_str = None
             self.selected_time_str = None
-        else:
-            if not prefs["keep_time_after_save"]:
-                self.selected_time_str = None
 
         self._refresh_date_time_display()
 
         self.amount_input.focus = False
-        self.item_input.focus = True
+        self.item_input.focus = reopen_keyboard
 
     def _format_inr_display(self, raw: str) -> str:
         if not raw:
@@ -468,8 +575,8 @@ class AddScreen(BoxLayout):
             max_row_w - self.hero_rupee.width - spacing - self.hero_cursor.width
         )
 
-        default_fs = dp(56)
-        min_fs = dp(34)
+        default_fs = dp(56) + self._amount_font_bias
+        min_fs = dp(34) + min(0, self._amount_font_bias)
 
         text = self.hero_amount.text if self.hero_amount.text else "0"
 
@@ -514,7 +621,7 @@ class AddScreen(BoxLayout):
         from itertools import zip_longest
 
         picker = MDDatePicker()
-        primary = (0.914, 0.094, 0.153, 1.0)
+        primary = self._accent_rgba
         secondary = (0.08, 0.09, 0.11, 0.98)
         picker.md_bg_color = primary
         picker.background_color = secondary
@@ -559,7 +666,7 @@ class AddScreen(BoxLayout):
 
     def open_time_picker(self):
         picker = MDTimePicker()
-        primary = (0.914, 0.094, 0.153, 1.0)
+        primary = self._accent_rgba
         secondary = (0.08, 0.09, 0.11, 0.98)
         picker.md_bg_color = secondary
         picker.background_color = primary

@@ -17,6 +17,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.core.image import Image as CoreImage
 from kivy.properties import NumericProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition, SlideTransition
+from kivy.storage.jsonstore import JsonStore
 from kivymd.app import MDApp
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
@@ -55,10 +56,14 @@ class RootUI(BoxLayout):
         super().__init__(**kwargs)
 
         self._bg_rect = None
+        self._bg_dim_rect = None
         self._bg_tex = None
         self.orientation = "vertical"
         self._last_main_screen = "add"
         self._current_main_screen = "add"
+        self._status_bar_top_pad = dp(6)
+        self._android_bottom_safe = dp(38) if platform == "android" else dp(16)
+        self._accent_rgba = (0.914, 0.094, 0.153, 1.0)
 
         bg_path = os.path.join(os.path.dirname(__file__), "assets", "background.png")
         if os.path.exists(bg_path):
@@ -75,8 +80,13 @@ class RootUI(BoxLayout):
                 Color(1, 1, 1, 1)
                 self._bg_tex.wrap = "clamp_to_edge"
                 self._bg_rect = Rectangle(
-                    texture=self._bg_tex, pos=self.pos, size=self.size
+                    texture=self._bg_tex,
+                    pos=self.pos,
+                    size=self.size,
                 )
+
+            self._bg_dim_color = Color(0, 0, 0, 0)
+            self._bg_dim_rect = Rectangle(pos=self.pos, size=self.size)
 
         self.bind(pos=self._update_bg, size=self._update_bg, bg_u=self._update_bg)
         self._update_bg()
@@ -90,12 +100,15 @@ class RootUI(BoxLayout):
 
         self.drive_sync = DriveSyncService()
 
+        Window.bind(size=lambda *_: self._update_dock_width())
+        Window.bind(on_keyboard=self._on_window_keyboard)
+
         # ---------- Top Bar ----------
         self.top_bar = BoxLayout(
             orientation="horizontal",
             size_hint_y=None,
-            height=dp(56),
-            padding=(dp(16), dp(10), dp(16), 0),
+            height=dp(60),
+            padding=(dp(16), self._status_bar_top_pad, dp(16), 0),
             spacing=dp(8),
         )
 
@@ -157,15 +170,17 @@ class RootUI(BoxLayout):
         settings_screen.add_widget(self.settings_screen)
         self.screen_manager.add_widget(settings_screen)
 
-        self.content_wrap = BoxLayout(padding=(dp(18), dp(8), dp(18), dp(12)))
+        self.content_wrap = BoxLayout(
+            padding=(dp(18), dp(8), dp(18), dp(18)),
+        )
         self.content_wrap.add_widget(self.screen_manager)
         self.add_widget(self.content_wrap)
 
         # ---------- Dock ----------
         self.dock_area = AnchorLayout(
             size_hint_y=None,
-            height=dp(104),
-            padding=(0, 0, 0, dp(16)),
+            height=dp(136),
+            padding=(0, 0, 0, self._android_bottom_safe),
         )
 
         self.dock = MDCard(
@@ -183,11 +198,136 @@ class RootUI(BoxLayout):
 
         self._build_dock_buttons()
         self._update_dock_width()
-        Window.bind(size=lambda *_: self._update_dock_width())
 
         self.screen_manager.current = "add"
         self._set_bg_segment(0)
+        self.apply_visual_prefs()
         self._update_top_bar("add")
+        Clock.schedule_once(lambda *_: self.add_screen.on_open(), 0.05)
+
+    def _settings_store(self):
+        app = MDApp.get_running_app()
+        base = app.user_data_dir if app else "."
+        return JsonStore(f"{base}/settings.json")
+
+    def _get_pref(self, key, default):
+        try:
+            store = self._settings_store()
+            if store.exists("prefs"):
+                data = store.get("prefs")
+                if key in data:
+                    return data.get(key, default)
+        except Exception:
+            pass
+        return default
+
+    def _accent_from_pref(self):
+        accent = self._get_pref("accent_color", "red")
+        palette = {
+            "red": (0.914, 0.094, 0.153, 1.0),
+            "blue": (0.18, 0.52, 0.98, 1.0),
+            "purple": (0.62, 0.33, 0.95, 1.0),
+            "green": (0.18, 0.72, 0.38, 1.0),
+        }
+        return palette.get(accent, palette["red"])
+
+    def _dim_alpha_from_pref(self):
+        mode = self._get_pref("bg_dim_strength", "off")
+        return {
+            "off": 0.00,
+            "low": 0.08,
+            "medium": 0.18,
+            "high": 0.28,
+        }.get(mode, 0.00)
+
+    def _card_alpha_from_pref(self):
+        mode = self._get_pref("card_transparency", "normal")
+        return {
+            "glass": 0.74,
+            "normal": 0.95,
+            "dark": 0.98,
+        }.get(mode, 0.95)
+
+    def _corner_radius_from_pref(self):
+        mode = self._get_pref("corner_style", "rounded")
+        return {
+            "soft": dp(18),
+            "rounded": dp(28),
+            "extra": dp(36),
+        }.get(mode, dp(28))
+
+    def _transition_duration(self):
+        mode = self._get_pref("animation_speed", "normal")
+        return {
+            "normal": 0.35,
+            "fast": 0.18,
+            "off": 0.01,
+        }.get(mode, 0.35)
+
+    def apply_visual_prefs(self):
+        self._accent_rgba = self._accent_from_pref()
+
+        dim_alpha = self._dim_alpha_from_pref()
+        self._bg_dim_color.rgba = (0, 0, 0, dim_alpha)
+
+        large_ui = self._get_pref("large_ui_text", "off") == "on"
+        compact = self._get_pref("compact_mode", "normal") == "compact"
+
+        dock_height_mode = self._get_pref("dock_height_mode", "normal")
+        dock_lift_mode = self._get_pref("dock_lift_mode", "high")
+        show_nav_labels = self._get_pref("show_nav_labels", "on") == "on"
+
+        dock_alpha = self._card_alpha_from_pref()
+        corner_radius = self._corner_radius_from_pref()
+
+        self.top_bar.height = dp(56) if compact else dp(60)
+        self.top_bar.padding = (
+            (dp(14), self._status_bar_top_pad, dp(14), 0)
+            if compact
+            else (dp(16), self._status_bar_top_pad, dp(16), 0)
+        )
+        self.top_title.font_size = "24sp" if large_ui else "22sp"
+
+        self.content_wrap.padding = (
+            (dp(14), dp(6), dp(14), dp(14))
+            if compact
+            else (dp(18), dp(8), dp(18), dp(18))
+        )
+
+        self._android_bottom_safe = (
+            dp(54)
+            if (platform == "android" and dock_lift_mode == "high")
+            else dp(38) if platform == "android" else dp(16)
+        )
+
+        self.dock.height = dp(86) if dock_height_mode == "tall" else dp(76)
+        self.dock.radius = [corner_radius]
+        self.dock.md_bg_color = (0.06, 0.06, 0.06, dock_alpha)
+
+        self.dock_area.height = self.dock.height + self._android_bottom_safe + dp(28)
+        self.dock_area.padding = (0, 0, 0, self._android_bottom_safe)
+
+        for box in (self._button_add, self._button_history, self._button_reports):
+            box.spacing = dp(2) if show_nav_labels else 0
+            box._dock_label.opacity = 1 if show_nav_labels else 0
+            box._dock_label.height = dp(18) if show_nav_labels else 0
+            box._dock_label.font_size = "14sp" if large_ui else "12sp"
+
+        self._update_dock_state(
+            self._current_main_screen
+            if self.screen_manager.current != "settings"
+            else self._last_main_screen
+        )
+
+        try:
+            self.add_screen.apply_prefs()
+        except Exception:
+            pass
+
+        try:
+            self.settings_screen.apply_prefs()
+        except Exception:
+            pass
 
     def _update_bg(self, *args):
         if self._bg_rect:
@@ -206,6 +346,10 @@ class RootUI(BoxLayout):
                     u0,
                     0,
                 )
+
+        if self._bg_dim_rect:
+            self._bg_dim_rect.pos = self.pos
+            self._bg_dim_rect.size = self.size
 
     def _update_dock_width(self, *args):
         w = Window.width
@@ -238,10 +382,13 @@ class RootUI(BoxLayout):
         text = MDLabel(
             text=label,
             halign="center",
-            padding=(0, 0, 0, dp(15)),
+            size_hint_y=None,
+            height=dp(18),
+            padding=(0, 0, 0, dp(4)),
         )
         text.font_name = "Cause-Black"
         text.theme_text_color = "Custom"
+        text.font_size = "12sp"
 
         box.add_widget(button)
         box.add_widget(text)
@@ -252,12 +399,11 @@ class RootUI(BoxLayout):
         return box
 
     def _update_dock_state(self, active_tab):
-        active = (0.914, 0.094, 0.153, 1.0)
         inactive = (1, 1, 1, 0.60)
 
         for box in (self._button_add, self._button_history, self._button_reports):
             is_active = box._dock_tab == active_tab
-            color = active if is_active else inactive
+            color = self._accent_rgba if is_active else inactive
             box._dock_icon.theme_text_color = "Custom"
             box._dock_icon.text_color = color
             box._dock_label.text_color = color
@@ -265,7 +411,7 @@ class RootUI(BoxLayout):
     def _show_dock(self):
         self.dock_area.opacity = 1
         self.dock_area.disabled = False
-        self.dock_area.height = dp(104)
+        self.dock_area.height = self.dock.height + self._android_bottom_safe + dp(28)
 
     def _hide_dock(self):
         self.dock_area.opacity = 0
@@ -293,6 +439,11 @@ class RootUI(BoxLayout):
             self.screen_manager.current = tab_name
             self._current_main_screen = tab_name
             self._update_top_bar(tab_name)
+            if tab_name == "add":
+                try:
+                    self.add_screen.on_open()
+                except Exception:
+                    pass
 
         Clock.schedule_once(do_switch, 0.01)
         self._animate_tab_switch(tab_name)
@@ -308,9 +459,10 @@ class RootUI(BoxLayout):
         except Exception:
             pass
 
+        duration = self._transition_duration()
         self.screen_manager.transition = SlideTransition(
             direction="down",
-            duration=0.30,
+            duration=duration,
         )
         self.screen_manager.current = "settings"
         self._update_top_bar("settings")
@@ -326,9 +478,10 @@ class RootUI(BoxLayout):
             else "add"
         )
 
+        duration = self._transition_duration()
         self.screen_manager.transition = SlideTransition(
             direction="up",
-            duration=0.30,
+            duration=duration,
         )
         self.screen_manager.current = target
         self._current_main_screen = target
@@ -346,6 +499,18 @@ class RootUI(BoxLayout):
                 self.reports_screen.refresh()
             except Exception:
                 pass
+        elif target == "add":
+            try:
+                self.add_screen.on_open()
+            except Exception:
+                pass
+
+    def _on_window_keyboard(self, window, key, scancode, codepoint, modifiers):
+        if key == 27:
+            if self.screen_manager.current == "settings":
+                self.close_settings()
+                return True
+        return False
 
     def _update_top_bar(self, screen_name: str):
         if screen_name == "settings":
@@ -366,7 +531,6 @@ class RootUI(BoxLayout):
 
     def _animate_tab_switch(self, tab_name: str):
         from kivy.animation import Animation
-        from kivy.uix.screenmanager import SlideTransition
 
         tab_order = {"add": 0, "history": 1, "reports": 2}
         current = tab_order.get(self._current_main_screen, 0)
@@ -380,12 +544,14 @@ class RootUI(BoxLayout):
             target_u = 2.0 / 3.0
 
         direction = "left" if target > current else "right"
+        duration = self._transition_duration()
 
         self.screen_manager.transition = SlideTransition(
-            duration=0.35, direction=direction
+            duration=duration,
+            direction=direction,
         )
         Animation.cancel_all(self, "bg_u")
-        Animation(bg_u=target_u, duration=0.35, t="out_quad").start(self)
+        Animation(bg_u=target_u, duration=duration, t="out_quad").start(self)
 
     def refresh_reports(self):
         try:
@@ -409,10 +575,10 @@ class TxTrackerApp(MDApp):
         self.theme_cls.material_style = "M3"
 
         Clock.schedule_interval(self._auto_sync_tick, 60)
-        self._apply_immersive()
+        self._apply_android_window_mode()
 
     def on_resume(self):
-        self._apply_immersive()
+        self._apply_android_window_mode()
 
     def build(self):
         register_all_fonts()
@@ -437,7 +603,7 @@ class TxTrackerApp(MDApp):
         except Exception:
             pass
 
-    def _apply_immersive(self):
+    def _apply_android_window_mode(self):
         if platform != "android":
             return
 
@@ -446,6 +612,7 @@ class TxTrackerApp(MDApp):
             from jnius import autoclass
 
             View = autoclass("android.view.View")
+            Color = autoclass("android.graphics.Color")
             WindowManagerLayoutParams = autoclass(
                 "android.view.WindowManager$LayoutParams"
             )
@@ -455,21 +622,17 @@ class TxTrackerApp(MDApp):
             window = mActivity.getWindow()
             decor_view = window.getDecorView()
 
-            # Full immersive + draw behind status/nav bars
             flags = (
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             )
             decor_view.setSystemUiVisibility(flags)
 
-            # Let app content extend into the whole screen
-            window.addFlags(WindowManagerLayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            window.clearFlags(WindowManagerLayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.addFlags(WindowManagerLayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.setStatusBarColor(Color.parseColor("#00000000"))
+            window.setNavigationBarColor(Color.parseColor("#CC0A0A0A"))
 
-            # Allow drawing into notch / cutout area on supported Android versions
             if BuildVersion.SDK_INT >= BuildVersionCodes.P:
                 attrs = window.getAttributes()
                 attrs.layoutInDisplayCutoutMode = (

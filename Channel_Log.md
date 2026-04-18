@@ -6,6 +6,72 @@ Versioning format: { finished }.{ all_types_of_changes }
 
 ---
 
+## 🚀 [1.4] — Settings Screen + JSON Import + Pre-APK Stability Pass
+
+### Added
+
+- **Dedicated Settings screen**
+  - Opened from the gear icon
+  - Separate from the main Add / History / Reports navigation
+  - Back navigation returns to the previously opened main screen
+- **JSON transaction import**
+  - Import transactions from a JSON file
+  - Duplicate skipping during import
+  - Status feedback after import
+- **Entry preference toggles**
+  - Keep date after save
+  - Keep time after save
+  - Keep note after save
+- **Backup metadata in Settings**
+  - Last backup time shown
+  - Drive status shown in a dedicated status card
+
+### Changed
+
+- **Drive sync flow**
+  - Backup file creation now uses **Create Document**
+  - Improved status/error messages
+  - Safer read/write handling for JSON files
+  - Backup metadata now persists locally
+- **Add screen behavior**
+  - Save flow cleaned up
+  - Hero amount resets correctly after save
+  - Better date/time text refresh after saving
+  - Preference-driven field reset behavior
+- **History screen**
+  - Drive-related controls removed from History
+  - Cleaner transaction-only focus
+  - RecycleView row reuse handling cleaned up
+- **Reports screen**
+  - Internal chart/card logic cleaned and stabilized
+  - Refresh behavior improved
+- **Line chart**
+  - Axis-label spacing logic tuned for week / month / year
+  - Brighter axis labels retained
+  - Unused imports removed
+
+### Fixed
+
+- Settings screen navigation returning to wrong tab
+- MDSwitch initialization crash in Settings
+- JSON import validation weakness
+- Add screen stale UI state after save
+- History row callback reuse fragility
+- Several chart label spacing issues
+- First-time backup creation flow mismatch
+
+### Notes
+
+- Core app behavior is now in a stronger state before Android APK testing
+- Android picker / SAF behavior still needs real-device verification
+- Repo version: **1.4**
+
+---
+
+## [1.3] - Used for making apk.
+
+---
+
 ## 🚀 [1.2] — Drive Link Persistence + Release Prep
 
 ### Added

@@ -1,15 +1,17 @@
-# Utility functions for the TxTracker app, including currency conversion, date formatting and parsing, and time formatting.
-
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from datetime import datetime, date, timedelta
 
 
 def rupees_to_paise(text):
-    x = (text or "").strip().replace("₹", "")
+    x = (text or "").strip().replace("₹", "").replace(",", "")
     if not x:
         raise ValueError("Amount is empty")
 
-    decimal = Decimal(x).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    try:
+        decimal = Decimal(x).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    except (InvalidOperation, ValueError):
+        raise ValueError("Invalid amount")
+
     paise = int(decimal * 100)
 
     if paise <= 0:
@@ -19,7 +21,7 @@ def rupees_to_paise(text):
 
 
 def paise_to_rupees(paise):
-    decimal = Decimal(paise) / Decimal(100)
+    decimal = Decimal(int(paise)) / Decimal(100)
     return f"{decimal:.2f}"
 
 

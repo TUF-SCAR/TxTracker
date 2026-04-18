@@ -1,14 +1,10 @@
-# A custom widget for displaying a line chart of transaction data, used in the reports screen.
-# It supports smooth animations when the data changes, and automatically scales the y-axis with nice round numbers.
-
 import math
 from math import ceil
-from kivy.metrics import dp, sp
+from kivy.metrics import dp
 from kivy.animation import Animation
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, Line, Ellipse, Rectangle, RoundedRectangle
 from kivy.core.text import Label as CoreLabel
-from kivymd.app import MDApp
 from kivy.properties import ListProperty, NumericProperty
 
 
@@ -217,6 +213,7 @@ class LineChart(Widget):
         x_labels = self.x_labels or []
         ox = self.x
         oy = self.y
+
         with self.canvas:
             Color(1, 1, 1, 0.12)
             Line(
@@ -229,6 +226,7 @@ class LineChart(Widget):
                 width=dp(1),
                 group="axes",
             )
+
             for i in range(y_ticks + 1):
                 t = i / y_ticks
                 y = oy + plot_bottom + plot_h * t
@@ -249,25 +247,135 @@ class LineChart(Widget):
                 )
 
             if x_labels:
-                max_labels = 7
-                step = max(1, ceil((len(x_labels) - 1) / max_labels))
-                for i, label in enumerate(x_labels):
-                    if i % step != 0 and i != len(x_labels) - 1:
-                        continue
-                    label_dx = 0
-                    if i == len(x_labels) - 2:
-                        label_dx = -dp(8)
-                    if i == len(x_labels) - 1:
-                        label_dx = -dp(4)
-                    x = ox + plot_left + (plot_w / max(1, len(x_labels) - 1)) * i
-                    self._draw_text(
-                        label,
-                        x + label_dx,
-                        oy + plot_bottom - dp(6),
-                        halign="center",
-                        valign="top",
-                        group="axes",
-                    )
+                count = len(x_labels)
+                label_y = oy + plot_bottom - dp(6)
+
+                if count == 7:
+                    for i, label in enumerate(x_labels):
+                        x = ox + plot_left + (plot_w / max(1, count - 1)) * i
+
+                        if i == 0:
+                            x -= dp(6)
+                        elif i == 1:
+                            x += dp(6)
+
+                        if i == 0:
+                            self._draw_text(
+                                label,
+                                x,
+                                label_y,
+                                halign="left",
+                                valign="top",
+                                group="axes",
+                            )
+                        elif i == count - 1:
+                            self._draw_text(
+                                label,
+                                x,
+                                label_y,
+                                halign="right",
+                                valign="top",
+                                group="axes",
+                            )
+                        else:
+                            self._draw_text(
+                                label,
+                                x,
+                                label_y,
+                                halign="center",
+                                valign="top",
+                                group="axes",
+                            )
+
+                elif count == 12:
+                    year_indices = [0, 2, 4, 6, 8, 10, 11]
+
+                    for idx in year_indices:
+                        label = x_labels[idx]
+                        x = ox + plot_left + (plot_w / max(1, count - 1)) * idx
+
+                        match idx:
+                            case 2:
+                                x += dp(8)
+                            case 4:
+                                x += dp(2)
+                            case 6:
+                                x += dp(1)
+                            case 8:
+                                x -= dp(2)
+                            case 10:
+                                x -= dp(14)
+                            case 11:
+                                x += dp(8)
+
+                        if idx == 0:
+                            self._draw_text(
+                                label,
+                                x,
+                                label_y,
+                                halign="left",
+                                valign="top",
+                                group="axes",
+                            )
+                        elif idx == count - 1:
+                            self._draw_text(
+                                label,
+                                x,
+                                label_y,
+                                halign="right",
+                                valign="top",
+                                group="axes",
+                            )
+                        else:
+                            self._draw_text(
+                                label,
+                                x,
+                                label_y,
+                                halign="center",
+                                valign="top",
+                                group="axes",
+                            )
+
+                else:
+                    anchor_indices = [0, 5, 10, 15, 20, 25, count - 1]
+                    used = set()
+
+                    for idx in anchor_indices:
+                        idx = min(idx, count - 1)
+                        if idx in used:
+                            continue
+                        used.add(idx)
+
+                        label = x_labels[idx]
+                        x = ox + plot_left + (plot_w / max(1, count - 1)) * idx
+
+                        if idx == 0:
+                            self._draw_text(
+                                label,
+                                x,
+                                label_y,
+                                halign="left",
+                                valign="top",
+                                group="axes",
+                            )
+                        elif idx == count - 1:
+                            self._draw_text(
+                                label,
+                                x,
+                                label_y,
+                                halign="right",
+                                valign="top",
+                                group="axes",
+                            )
+                        else:
+                            self._draw_text(
+                                label,
+                                x,
+                                label_y,
+                                halign="center",
+                                valign="top",
+                                group="axes",
+                            )
 
     def _draw_text(self, text, x, y, halign="center", valign="middle", group="axes"):
         label = CoreLabel(
@@ -280,21 +388,35 @@ class LineChart(Widget):
         texture = label.texture
         if not texture:
             return
+
         tx = x
         ty = y
+
         if halign == "center":
             tx = x - texture.size[0] / 2
         elif halign == "right":
             tx = x - texture.size[0]
+
         if valign == "middle":
             ty = y - texture.size[1] / 2
         elif valign == "top":
             ty = y - texture.size[1]
-        Rectangle(pos=(tx, ty), size=texture.size, texture=texture, group=group)
-        Rectangle(pos=(tx, ty), size=texture.size, texture=texture, group=group)
-        Rectangle(pos=(tx, ty), size=texture.size, texture=texture, group=group)
-        Rectangle(pos=(tx, ty), size=texture.size, texture=texture, group=group)
-        Rectangle(pos=(tx, ty), size=texture.size, texture=texture, group=group)
+
+        glow_offsets = [
+            (0, 0),
+            (0.4, 0),
+            (-0.4, 0),
+            (0, 0.4),
+            (0, -0.4),
+        ]
+
+        for dx, dy in glow_offsets:
+            Rectangle(
+                pos=(tx + dx, ty + dy),
+                size=texture.size,
+                texture=texture,
+                group=group,
+            )
 
     def set_colors(self, line_rgba, dot_rgba=None):
         self.line_color = list(line_rgba)

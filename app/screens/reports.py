@@ -1,8 +1,3 @@
-# A screen for viewing transaction reports, with sections for "This Week", "This Month" and "This Year".
-# Each section shows the total amount spent and a line chart of daily/monthly totals.
-# Tapping a section expands/collapses the chart with animation.
-
-import calendar
 from datetime import date, timedelta
 from kivy.metrics import dp
 from kivy.animation import Animation
@@ -197,13 +192,12 @@ class ReportScreen(BoxLayout):
                 chart.height = dp(210)
                 Animation.cancel_all(chart)
                 Animation(height=dp(210), d=1, t="out_expo").start(chart)
+
                 if not labels:
                     if k == "week":
                         labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
                     elif k == "month":
-                        today = date.today()
-                        days_in_month = calendar.monthrange(today.year, today.month)[1]
-                        labels = [str(i) for i in range(1, days_in_month + 1)]
+                        labels = [str(i) for i in range(1, 32)]
                     else:
                         labels = [
                             "Jan",
@@ -219,6 +213,7 @@ class ReportScreen(BoxLayout):
                             "Nov",
                             "Dec",
                         ]
+
                 values = vals if vals else [0] * len(labels)
                 chart.set_data(values, labels)
             else:
@@ -249,15 +244,15 @@ class ReportScreen(BoxLayout):
         self.card_year._value_lbl.text = f"₹{paise_to_rupees(year_total)}"
 
         week_vals_paise = self.db.week_daily_totals(week_start)
-        self._week_vals = [v / 100 for v in week_vals_paise]
-        self._week_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-
         month_vals_paise = self.db.month_daily_totals(month_start)
-        self._month_vals = [v / 100 for v in month_vals_paise]
-        self._month_labels = [str(i) for i in range(1, len(self._month_vals) + 1)]
-
         year_vals_paise = self.db.year_monthly_totals(year_start)
+
+        self._week_vals = [v / 100 for v in week_vals_paise]
+        self._month_vals = [v / 100 for v in month_vals_paise]
         self._year_vals = [v / 100 for v in year_vals_paise]
+
+        self._week_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        self._month_labels = [str(i) for i in range(1, len(self._month_vals) + 1)]
         self._year_labels = [
             "Jan",
             "Feb",

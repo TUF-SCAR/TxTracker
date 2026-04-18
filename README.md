@@ -2,8 +2,9 @@
 
 A clean, offline-first personal expense tracker built with Python (Kivy & KivyMD)
 
-TxTracker is a minimal, privacy-focused expense tracking app designed for Android and desktop.
+TxTracker is a minimal, privacy-focused expense tracking app designed for Android.
 It focuses on clarity, speed, and local-first data ownership — no accounts, no ads, no cloud lock-in.
+
 I made this for myself, designed for me. If you want you can fork this and edit, need help? ask me.
 
 ---
@@ -16,26 +17,41 @@ I made this for myself, designed for me. If you want you can fork this and edit,
 - Item name, amount (₹ INR formatting), optional note
 - Large, responsive amount input with live formatting
 - Clear validation feedback
+- Fast-entry preferences (can toggle in settings):
+  - keep date after save
+  - keep time after save
+  - keep note after save
 
 ### 📜 History
 
-- Grouped transaction list by date
-- Clean card-based layout
-- Tap to view full details
+- Grouped transaction list
+- Card-based layout
+- Tap a card to view full details
+- Soft delete + undo
 - Instant refresh after adding transactions
 
 ### 📈 Reports
 
-- Daily / monthly summaries
+- This Week / This Month / This Year summaries
 - Expandable charts
-- Dynamic scaling for readability
+- Dynamic scaling
 - Smooth animations
+- Custom chart widget with tuned label spacing
 
-### 🔁 Optional Drive Sync
+### ⚙️ Settings
 
-- Export & sync data to Google Drive
-- Offline-first (app works without internet)
-- Sync triggers safely without blocking UI
+- Separate settings screen opened from the gear icon
+- Backup/import controls
+- Entry preference toggles
+- Backup status + last backup time
+
+### 🔁 Backup & Import
+
+- Create JSON backup file
+- Backup transactions to Drive-linked JSON
+- Import transactions from JSON
+- Duplicate skipping during import
+- Offline-first app behavior
 
 ---
 
@@ -43,21 +59,21 @@ I made this for myself, designed for me. If you want you can fork this and edit,
 
 - Offline-first — your data stays on your device
 - No accounts — no login, no tracking
-- Fast UI — no heavy animations, no clutter
-- Consistent layout — mobile & desktop parity
-- Readable codebase — Python-only UI (no KV)
+- Fast UI — no clutter
+- Python-only UI — no KV language
+- Built for personal use first
 
 ---
 
 ## 📱 Platforms
 
-| Platform            | Status       |
-| ------------------- | ------------ |
-| Android (14+)       | ✅ Stable    |
-| Android (arm64-v8a) | ✅ Supported |
-| Windows             | ✅ Supported |
-| Linux               | ✅ Supported |
-| macOS               | ⚠️ Untested  |
+| Platform            | Status              |
+| ------------------- | ------------------- |
+| Android (14+)       | ⚠️ Needs final test |
+| Android (arm64-v8a) | ⚠️ Needs final test |
+| Windows             | ✅ Supported        |
+| Linux               | ✅ Supported        |
+| macOS               | ⚠️ Untested         |
 
 ---
 
@@ -76,7 +92,7 @@ I made this for myself, designed for me. If you want you can fork this and edit,
 
 TxTracker/  
 ├─ main.py # App entry point  
-├─ buildozer.spec # Android build config    
+├─ buildozer.spec # Android build config  
 ├─ requirements.txt  
 │
 ├─ app/  
@@ -86,9 +102,10 @@ TxTracker/
 │ ├─ screens/  
 │ │ ├─ add.py # Add transaction screen  
 │ │ ├─ history.py # History screen  
-│ │ └─ reports.py # Reports screen  
+│ │ ├─ reports.py # Reports screen  
+│ │ └─ settings.py
 │ │  
-│ ├─ services/    
+│ ├─ services/  
 │ │ └─ drive_sync.py # Google Drive sync logic  
 │ │  
 │ └─ widgets/  
@@ -100,7 +117,7 @@ TxTracker/
 │  
 ├─ Channel_Log.md # Full changelog  
 ├─ .gitignore  
-└─ README.md  
+└─ README.md
 
 ---
 
@@ -115,7 +132,9 @@ TxTracker/
 
 ### Build
 
+```bash
 buildozer android debug
+```
 
 ---
 
@@ -124,7 +143,7 @@ buildozer android debug
 - All data stored locally in SQLite
 - No analytics
 - No background tracking
-- Optional Drive sync is user-initiated
+- Backup/import is user-controlled
 - Database files are ignored from Git
 
 ---
@@ -132,9 +151,8 @@ buildozer android debug
 ## 🧾 Versioning
 
 - App version: 1.1 (stable)
-- Repository version: 1.1
-- Semantic versioning used
-- Full history in Channel_Log.md
+- Repository version: 1.4
+- Full history in `Channel_Log.md`
 
 ---
 
@@ -147,7 +165,7 @@ Computer Engineering student
 
 ## 📜 License
 
-MIT License — see the LICENSE file for details.
+MIT License — see the `LICENSE` file for details.
 
 ---
 
@@ -156,3 +174,4 @@ MIT License — see the LICENSE file for details.
 - This app intentionally avoids over-engineering
 - KivyMD 1.2.0 is retained for stability
 - UI logic is kept Python-only for clarity
+- Drive/JSON behavior is implemented, with final Android verification pending

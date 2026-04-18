@@ -1,17 +1,14 @@
-# A screen for adding a new transaction, with fields for date, time, item name, amount and note.
-
-import time
-from datetime import datetime
 from kivy.app import App
 from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.core.text import Label as CoreLabel
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.storage.jsonstore import JsonStore
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.textfield import MDTextField
-from kivy.uix.anchorlayout import AnchorLayout
 from kivymd.uix.pickers import MDDatePicker, MDTimePicker
 from app.utils import rupees_to_paise, time_24_to_12
 
@@ -25,9 +22,17 @@ class AddScreen(BoxLayout):
         self.padding = (dp(12), dp(18), dp(12), dp(12))
         self.spacing = dp(6)
 
+        self.selected_date = None
+        self.selected_date_str = None
+        self.selected_time_str = None
+
+        self._cursor_ev = None
+        self._cursor_on = False
+        self._status_reset_event = None
+
         card = MDCard(
             orientation="vertical",
-            padding=((dp(18)), dp(18), dp(18), dp(18)),
+            padding=(dp(18), dp(18), dp(18), dp(18)),
             spacing=dp(10),
             size_hint=(0.92, None),
             radius=[dp(24)],
@@ -43,14 +48,12 @@ class AddScreen(BoxLayout):
         )
         self.date_time_input.font_name_hint_text = "Nunito-Medium"
         self.date_time_input.bind(on_touch_down=self.date_time_touch)
-        self.selected_date_str = None
-        self.selected_time_str = None
 
         self.item_input = MDTextField(hint_text="Item*")
         self.item_input.font_name_hint_text = "Nunito-Medium"
 
         hero_wrap = AnchorLayout(size_hint_y=None, height=dp(72))
-        hero_wrap.padding = (0, 0, 0, (dp(28)))
+        hero_wrap.padding = (0, 0, 0, dp(28))
         self.hero_wrap = hero_wrap
 
         hero_row = BoxLayout(
@@ -60,7 +63,6 @@ class AddScreen(BoxLayout):
             spacing=dp(2),
         )
         self.hero_row = hero_row
-        hero_row.size_hint = (None, None)
         hero_row.width = dp(120)
         hero_row.bind(minimum_width=hero_row.setter("width"))
 
@@ -99,9 +101,6 @@ class AddScreen(BoxLayout):
         self.hero_cursor.text_color = (0.914, 0.094, 0.153, 1.0)
         self.hero_cursor.opacity = 0
 
-        self._cursor_ev = None
-        self._cursor_on = False
-
         hero_row.add_widget(self.hero_rupee)
         hero_row.add_widget(self.hero_amount)
         hero_row.add_widget(self.hero_cursor)
@@ -125,6 +124,7 @@ class AddScreen(BoxLayout):
         )
         total_amount.font_name = "Nunito-Black"
         total_amount.font_size = "12sp"
+
         top_section = BoxLayout(
             orientation="vertical",
             size_hint_y=None,
@@ -165,7 +165,6 @@ class AddScreen(BoxLayout):
         )
         self.status_label.font_name = "ComicSansMS3"
         self._status_default_text = self.status_label.text
-        self._status_reset_event = None
 
         self.save_button = MDCard(
             size_hint=(1, None),
@@ -229,7 +228,6 @@ class AddScreen(BoxLayout):
             left.size = (dp(36), dp(36))
 
             field.size_hint_x = 1
-
             row.add_widget(left)
 
             field_wrap = AnchorLayout(anchor_y="bottom")
@@ -293,6 +291,25 @@ class AddScreen(BoxLayout):
         self.add_widget(card)
         self._fit_hero_amount()
 
+    def _get_prefs(self):
+        app = App.get_running_app()
+        store_base = app.user_data_dir if app else "."
+        store = JsonStore(f"{store_base}/settings.json")
+
+        prefs = {
+            "keep_date_after_save": True,
+            "keep_time_after_save": True,
+            "keep_note_after_save": False,
+        }
+
+        if store.exists("prefs"):
+            saved = store.get("prefs")
+            prefs["keep_date_after_save"] = saved.get("keep_date_after_save", True)
+            prefs["keep_time_after_save"] = saved.get("keep_time_after_save", True)
+            prefs["keep_note_after_save"] = saved.get("keep_note_after_save", False)
+
+        return prefs
+
     def set_status(self, text: str):
         self.status_label.text = text
 
@@ -306,6 +323,20 @@ class AddScreen(BoxLayout):
         self.status_label.text = self._status_default_text
         self._status_reset_event = None
 
+    def _clear_amount_ui(self):
+        self.amount_input.text = ""
+        self.hero_amount.text = "0"
+        self._fit_hero_amount()
+
+    def _refresh_date_time_display(self):
+        if self.selected_date_str and self.selected_time_str:
+            display_time = time_24_to_12(self.selected_time_str)
+            self.date_time_input.text = f"{self.selected_date_str} • {display_time}"
+        elif self.selected_date_str:
+            self.date_time_input.text = f"{self.selected_date_str} • Pick time again"
+        else:
+            self.date_time_input.text = ""
+
     def on_save(self, instance):
         if self.selected_date_str is None or self.selected_time_str is None:
             self.set_status("Pick date & time")
@@ -315,7 +346,7 @@ class AddScreen(BoxLayout):
         time_str = self.selected_time_str
 
         item = self.item_input.text.strip()
-        amount_text = self.amount_input.text.replace(",", "").strip()
+        amount_text = self.amount_input.text.strip()
         note = self.note_input.text.strip()
 
         if not item:
@@ -329,7 +360,6 @@ class AddScreen(BoxLayout):
             return
 
         self.db.add_transaction(date_str, time_str, item, amount, note)
-
         self.set_status("Saved")
 
         app = App.get_running_app()
@@ -338,12 +368,26 @@ class AddScreen(BoxLayout):
         if app and hasattr(app, "refresh_reports"):
             app.refresh_reports()
 
+        prefs = self._get_prefs()
+
         self.item_input.text = ""
-        self.amount_input.text = ""
-        self.note_input.text = ""
-        self.date_time_input.text = ""
-        self.selected_date_str = None
-        self.selected_time_str = None
+        self._clear_amount_ui()
+
+        if not prefs["keep_note_after_save"]:
+            self.note_input.text = ""
+
+        if not prefs["keep_date_after_save"]:
+            self.selected_date = None
+            self.selected_date_str = None
+            self.selected_time_str = None
+        else:
+            if not prefs["keep_time_after_save"]:
+                self.selected_time_str = None
+
+        self._refresh_date_time_display()
+
+        self.amount_input.focus = False
+        self.item_input.focus = True
 
     def _format_inr_display(self, raw: str) -> str:
         if not raw:
@@ -387,7 +431,6 @@ class AddScreen(BoxLayout):
 
             if self._cursor_ev is None:
                 self._cursor_ev = Clock.schedule_interval(self._blink_cursor, 0.5)
-
         else:
             if self._cursor_ev is not None:
                 self._cursor_ev.cancel()
@@ -402,7 +445,6 @@ class AddScreen(BoxLayout):
 
     def _on_amount_text(self, instance, value: str):
         raw = value.replace(",", "").strip()
-
         raw = "".join(ch for ch in raw if (ch.isdigit() or ch == "."))
 
         if raw.count(".") > 1:
@@ -506,6 +548,7 @@ class AddScreen(BoxLayout):
             picker.update_calendar(picker.year, picker.month)
         except Exception:
             pass
+
         picker.bind(on_save=self.on_date_selected, on_cancel=self.on_picker_cancel)
         picker.open()
 
@@ -536,9 +579,7 @@ class AddScreen(BoxLayout):
             return
 
         self.selected_time_str = f"{time_value.hour:02d}:{time_value.minute:02d}"
-
-        display_time = time_24_to_12(self.selected_time_str)
-        self.date_time_input.text = f"{self.selected_date_str} • {display_time}"
+        self._refresh_date_time_display()
 
     def on_time_cancel(self, *args):
         self.selected_date = None
